@@ -1,8 +1,7 @@
-# airfoil_tutorial.py
-# 
-# Created:  
-# Modified: Mar 2023, M. Clarke 
+'''
+The script below documents how to set up and plot the results of a polar analysis of an airfoil
 
+'''
 #----------------------------------------------------------------------
 #   Imports
 # ---------------------------------------------------------------------
