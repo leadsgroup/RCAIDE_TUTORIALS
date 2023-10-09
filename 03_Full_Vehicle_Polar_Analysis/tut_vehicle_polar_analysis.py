@@ -1,26 +1,27 @@
-# tut_Vehicle_Polar.py
-#
-# Created: Oct 2021, M. Clarke 
+'''
+
+The script below documents how to set up and plot the results of polar analysis of full aircraft configuration 
+
+''' 
 
 # ----------------------------------------------------------------------
 #   Imports
-# ----------------------------------------------------------------------
-# RCAIDE Imports 
+# ---------------------------------------------------------------------- 
 import RCAIDE
-from RCAIDE.Core import Units   
+from RCAIDE.Core                                           import Units , Data   
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties   
-from RCAIDE.Methods.Propulsion                             import design_turbofan
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties
-from RCAIDE.Visualization                                   import *      
-from RCAIDE.Methods.Aerodynamics.Common.Fidelity_Zero.Lift  import  VLM
+from RCAIDE.Methods.Propulsion                             import design_turbofan 
+from RCAIDE.Visualization                                  import *      
+from RCAIDE.Methods.Aerodynamics.Fidelity_Zero             import VLM
 
 import matplotlib.cm as cm   
 import numpy as np
 from copy import deepcopy
-import matplotlib.pyplot  as plt  
+import matplotlib.pyplot  as plt
+import os
 
 # ----------------------------------------------------------------------
-#   Generic Function Call
+#   Main
 # ---------------------------------------------------------------------- 
 def main(): 
     vehicle                            = vehicle_setup() 
@@ -192,7 +193,7 @@ def vehicle_setup():
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
     rel_path                              = os.path.dirname(ospath) + separator   
-    root_airfoil.coordinate_file          = '..' + separator + 'Airfoils' + separator + 'B737a.txt'
+    root_airfoil.coordinate_file          = rel_path + '..' + separator + 'Airfoils' + separator + 'B737a.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Root'
     segment.percent_span_location         = 0.0
@@ -206,7 +207,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     yehudi_airfoil                        = RCAIDE.Components.Airfoils.Airfoil()
-    yehudi_airfoil.coordinate_file        = '..' + separator + 'Airfoils' + separator + 'B737b.txt'
+    yehudi_airfoil.coordinate_file        =  rel_path + '..' + separator + 'Airfoils' + separator + 'B737b.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Yehudi'
     segment.percent_span_location         = 0.324
@@ -220,7 +221,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     mid_airfoil                           = RCAIDE.Components.Airfoils.Airfoil()
-    mid_airfoil.coordinate_file           = '..' + separator + 'Airfoils' + separator + 'B737c.txt'
+    mid_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator + 'B737c.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Section_2'
     segment.percent_span_location         = 0.963
@@ -234,7 +235,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     tip_airfoil                           =  RCAIDE.Components.Airfoils.Airfoil()
-    tip_airfoil.coordinate_file           = '..' + separator + 'Airfoils' + separator + 'B737d.txt'
+    tip_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator + 'B737d.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Tip'
     segment.percent_span_location         = 1.
@@ -797,7 +798,7 @@ def compute_polars(vehicle,AoA_range,Mach,Alt):
     aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vortex_distribution  = False
     aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vehicle              = False
     aerodynamics.geometry = vehicle
-    aerodynamics.initialize() 
+    #aerodynamics.initialize() 
     
     state            = RCAIDE.Analyses.Mission.Common.State()
     state.conditions = RCAIDE.Analyses.Mission.Common.Results() 

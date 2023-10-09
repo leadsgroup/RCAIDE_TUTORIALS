@@ -1,7 +1,8 @@
-# tut_propeller_analysis.py
-# 
-# Created:  Feb 2023, M. Clarke 
+'''
 
+The script below documents how to set up and plot the results of an isolaed/static propeller analysis  
+
+''' 
 #----------------------------------------------------------------------
 #   Imports
 # ----------------------------------------------------------------------
@@ -15,6 +16,9 @@ import os
 import numpy as np 
 import matplotlib.pyplot as plt   
 
+# ----------------------------------------------------------------------
+#   Main
+# ---------------------------------------------------------------------- 
 def main(): 
  
     prop                                     = RCAIDE.Energy.Converters.Propeller() 

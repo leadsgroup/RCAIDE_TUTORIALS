@@ -1,5 +1,6 @@
 '''
-The script below documents how to set up and plot the results of a polar analysis of an airfoil
+
+The script below documents how to set up and plot the results of a polar analysis of an airfoil 
 
 '''
 #----------------------------------------------------------------------
@@ -14,8 +15,7 @@ import numpy as np
 
 # ----------------------------------------------------------------------
 #   Main
-# ----------------------------------------------------------------------
-
+# ---------------------------------------------------------------------- 
 def main():      
     # -----------------------------------------------
     # Batch analysis of single airfoil - NACA 2410 

@@ -1,4 +1,9 @@
-# tut_mission_B737.py
+'''
+
+The script below documents how to set up and plot the results of a flight analysis of a transonic 
+passenger carrying aircraft. Here, the Boeing 737-800 model is used. 
+
+''' 
  
 # ----------------------------------------------------------------------
 #   Imports
@@ -22,10 +27,7 @@ import os
 #   Main
 # ----------------------------------------------------------------------
 
-def main():
-    """This function gets the vehicle configuration, analysis settings, and then runs the mission.
-    Once the mission is complete, the results are plotted."""
-  
+def main(): 
     # vehicle data
     vehicle  = vehicle_setup() 
     
@@ -131,7 +133,7 @@ def vehicle_setup():
     vehicle = RCAIDE.Vehicle()
     vehicle.tag = 'Boeing_737-800'    
     
-    # ################################################# Vehicle-level Properties ########################################################   
+    # ################################################# Vehicle-level Properties #################################################   
     vehicle.mass_properties.max_takeoff               = 79015.8 * Units.kilogram  
     vehicle.mass_properties.takeoff                   = 79015.8 * Units.kilogram    
     vehicle.mass_properties.operating_empty           = 62746.4 * Units.kilogram  
@@ -144,7 +146,7 @@ def vehicle_setup():
     vehicle.systems.control                           = "fully powered" 
     vehicle.systems.accessories                       = "medium range"
 
-    # ################################################# Landing Gear #####################################################################   
+    # ################################################# Landing Gear #############################################################   
     # ------------------------------------------------------------------        
     #  Landing Gear
     # ------------------------------------------------------------------  
@@ -192,7 +194,7 @@ def vehicle_setup():
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
     rel_path                              = os.path.dirname(ospath) + separator   
-    root_airfoil.coordinate_file          = '..' + separator + 'Airfoils' + separator + 'B737a.txt'
+    root_airfoil.coordinate_file          = rel_path + '..' + separator + 'Airfoils' + separator + 'B737a.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Root'
     segment.percent_span_location         = 0.0
@@ -206,7 +208,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     yehudi_airfoil                        = RCAIDE.Components.Airfoils.Airfoil()
-    yehudi_airfoil.coordinate_file        = '..' + separator + 'Airfoils' + separator + 'B737b.txt'
+    yehudi_airfoil.coordinate_file        = rel_path + '..' + separator + 'Airfoils' + separator + 'B737b.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Yehudi'
     segment.percent_span_location         = 0.324
@@ -220,7 +222,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     mid_airfoil                           = RCAIDE.Components.Airfoils.Airfoil()
-    mid_airfoil.coordinate_file           = '..' + separator + 'Airfoils' + separator + 'B737c.txt'
+    mid_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator + 'B737c.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Section_2'
     segment.percent_span_location         = 0.963
@@ -234,7 +236,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     tip_airfoil                           =  RCAIDE.Components.Airfoils.Airfoil()
-    tip_airfoil.coordinate_file           = '..' + separator + 'Airfoils' + separator + 'B737d.txt'
+    tip_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator + 'B737d.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Tip'
     segment.percent_span_location         = 1.
@@ -419,7 +421,7 @@ def vehicle_setup():
     # add to vehicle
     vehicle.append_component(wing)
 
-    # ################################################# Fuselage #####################################################################  
+    # ################################################# Fuselage ################################################################ 
     
     fuselage                                    = RCAIDE.Components.Fuselages.Fuselage()
     fuselage.tag                                = 'fuselage' 
@@ -642,20 +644,20 @@ def vehicle_setup():
     vehicle.append_component(nacelle)   
     vehicle.append_component(nacelle_2)   
 
-    # ################################################# Energy Network ##################################################################          
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    # ################################################# Energy Network #######################################################         
+    #------------------------------------------------------------------------------------------------------------------------- 
     #  Turbofan Network
-    #------------------------------------------------------------------------------------------------------------------------------------    
+    #-------------------------------------------------------------------------------------------------------------------------   
     net                                         = RCAIDE.Energy.Networks.Turbofan_Engine() 
     
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     # Fuel Distrubition Line 
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     fuel_line                                   = RCAIDE.Energy.Distributors.Fuel_Line() 
     
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     #   Fuel
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     # fuel tank
     fuel_tank                                   = RCAIDE.Energy.Storages.Fuel_Tanks.Fuel_Tank()
     fuel_tank.origin                            = wing.origin 
