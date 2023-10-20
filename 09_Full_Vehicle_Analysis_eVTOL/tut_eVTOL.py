@@ -17,11 +17,11 @@ from RCAIDE.Methods.Power.Battery.Sizing                                      im
 from RCAIDE.Methods.Weights.Correlations.Propulsion                           import nasa_motor
 from RCAIDE.Methods.Propulsion                                                import size_optimal_motor
 from RCAIDE.Methods.Propulsion                                                import design_propeller ,design_lift_rotor 
-from RCAIDE.Methods.Weights.Buildups.eVTOL                                    import compute_weight
-from RCAIDE.Methods.Center_of_Gravity.compute_component_centers_of_gravity    import compute_component_centers_of_gravity
+from RCAIDE.Methods.Weights.Buildups.eVTOL                                    import compute_weight 
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                         import wing_segmented_planform 
 from RCAIDE.Methods.Weights.Buildups.eVTOL.converge_evtol_weight              import converge_evtol_weight  
-from RCAIDE.Visualization                 import *       
+from RCAIDE.Methods.Performance.estimate_stall_speed                          import estimate_stall_speed 
+from RCAIDE.Visualization                                                     import *       
  
 import os
 import numpy as np 
@@ -42,7 +42,7 @@ def main():
     analyses = analyses_setup(configs)
 
     # mission analyses 
-    mission = mission_setup(analyses)
+    mission = mission_setup(analyses,vehicle)
     
     # create mission instances (for multiple types of missions)
     missions = missions_setup(mission) 
@@ -664,9 +664,9 @@ def vehicle_setup() :
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 100
     initialize_from_circuit_configuration(bat)  
-    bat.module_config.number_of_modules                    = 14 
+    bat.module.number_of_modules                           = 14 
     bat.module.geometrtic_configuration.total              = bat.pack.electrical_configuration.total
-    bat.module_config.voltage                              = bat.pack.maximum_voltage/bat.module_config.number_of_modules 
+    bat.module.voltage                                     = bat.pack.maximum_voltage/bat.module.number_of_modules 
     bat.module.geometrtic_configuration.normal_count       = 25
     bat.module.geometrtic_configuration.parallel_count     = 40
     bus.voltage                      =  bat.pack.maximum_voltage  
@@ -871,9 +871,9 @@ def vehicle_setup() :
     breakdown = compute_weight(vehicle,settings,contingency_factor = 1.0 )
     print(breakdown)
     
-    vehicle.weight_breakdown  = breakdown
-    compute_component_centers_of_gravity(vehicle)
-    vehicle.center_of_gravity() 
+    #vehicle.weight_breakdown  = breakdown
+    #compute_component_centers_of_gravity(vehicle)
+    #vehicle.center_of_gravity() 
     
     return vehicle
 
@@ -982,7 +982,7 @@ def base_analysis(vehicle):
 # ------------------------------------------------------------------
 #   Baseline Mission Setup
 # ------------------------------------------------------------------
-def mission_setup(analyses): 
+def mission_setup(analyses,vehicle): 
     
     # ------------------------------------------------------------------
     #   Initialize the Mission
@@ -1004,7 +1004,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------
     #   First Climb Segment: Constant Speed, Constant Rate
     # ------------------------------------------------------------------
-    segment     = Segments.Hover.Climb(base_segment)
+    segment     = Segments.Vertical_Flight.Climb(base_segment)
     segment.tag = "Vertical_Climb"   
     segment.analyses.extend( analyses.vertical_flight )  
     segment.altitude_start                          = 0.0  * Units.ft  
@@ -1135,7 +1135,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------
     #   Third Descent Segment: Constant Speed, Constant Rate
     # ------------------------------------------------------------------ 
-    segment                                         = Segments.Hover.Descent(base_segment)
+    segment                                         = Segments.Vertical_Flight.Descent(base_segment)
     segment.tag                                     = "Vertical_Descent" 
     segment.analyses.extend( analyses.vertical_flight)     
     segment.altitude_start                          = 300.0 * Units.ft   
@@ -1172,7 +1172,7 @@ def missions_setup(mission):
 # ----------------------------------------------------------------------
 #   Plot Results
 # ----------------------------------------------------------------------  
-def plot_results(results,run_noise_model,save_figure_flag):  
+def plot_results(results):  
     
     # Plots fligh conditions 
     plot_flight_conditions(results) 
@@ -1188,7 +1188,7 @@ def plot_results(results,run_noise_model,save_figure_flag):
     
     # Plot Aircraft Electronics
     plot_battery_pack_conditions(results) 
-    plot_battery_health_conditions(results)
+    plot_battery_temperature(results)
     plot_battery_cell_conditions(results) 
     plot_battery_degradation(results) 
     
