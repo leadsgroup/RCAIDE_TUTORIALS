@@ -811,8 +811,7 @@ def vehicle_setup() :
         lift_rotor.tag                    = 'lift_rotor_' + str(ii+1)
         lift_rotor.rotation               = rotations[ii]
         lift_rotor.origin                 = [lift_rotor_origins[ii]]
-        lift_rotor.phase_offset_angle     = angle_offsets[ii]
-        if i == 1
+        lift_rotor.phase_offset_angle     = angle_offsets[ii] 
         lift_rotor.active = False
         bus.rotors.append(lift_rotor)    
         
