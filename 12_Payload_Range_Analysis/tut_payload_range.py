@@ -111,14 +111,14 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero()
+    aerodynamics = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.000
     analyses.append(aerodynamics)
 
     # ------------------------------------------------------------------
     #  Stability Analysis
-    stability = RCAIDE.Analyses.Stability.Fidelity_Zero()
+    stability = RCAIDE.Analyses.Stability.Subsonic_VLM()
     stability.geometry = vehicle
     analyses.append(stability)
 

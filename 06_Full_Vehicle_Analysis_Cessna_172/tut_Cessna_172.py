@@ -5,9 +5,9 @@
 # ----------------------------------------------------------------------
 
 import RCAIDE
-from RCAIDE.Core import Units  
+from RCAIDE.Core               import Units  
 from RCAIDE.Methods.Propulsion import design_propeller 
-from RCAIDE.Visualization  import *    
+from RCAIDE.Visualization      import *    
  
 import matplotlib.pyplot as plt
 import numpy as np 
@@ -418,7 +418,7 @@ def base_analysis(vehicle):
     drag_area = 1.4*( total_wheel + total_strut)
     
     
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero() 
+    aerodynamics = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM() 
     aerodynamics.geometry                            = vehicle
     aerodynamics.settings.drag_coefficient_increment = 1.0*drag_area/vehicle.reference_area
     analyses.append(aerodynamics)

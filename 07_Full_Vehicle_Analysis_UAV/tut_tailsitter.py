@@ -231,7 +231,7 @@ def base_analysis(vehicle):
     
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero()
+    aerodynamics = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     aerodynamics.settings.maximum_lift_coefficient   = 1.5

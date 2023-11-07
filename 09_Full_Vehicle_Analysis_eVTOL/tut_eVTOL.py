@@ -10,18 +10,18 @@
 # ---------------------------------------------------------------------
 import RCAIDE
 from RCAIDE.Core import Units, Data   
-from RCAIDE.Energy.Networks.All_Electric                                      import All_Electric 
-from RCAIDE.Methods.Performance.estimate_cruise_drag                          import estimate_cruise_drag
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                         import segment_properties
-from RCAIDE.Methods.Power.Battery.Sizing                                      import initialize_from_circuit_configuration 
-from RCAIDE.Methods.Weights.Correlations.Propulsion                           import nasa_motor
-from RCAIDE.Methods.Propulsion                                                import size_optimal_motor
-from RCAIDE.Methods.Propulsion                                                import design_propeller ,design_lift_rotor 
-from RCAIDE.Methods.Weights.Buildups.eVTOL                                    import compute_weight 
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                         import wing_segmented_planform 
-from RCAIDE.Methods.Weights.Buildups.eVTOL.converge_evtol_weight              import converge_evtol_weight  
-from RCAIDE.Methods.Performance.estimate_stall_speed                          import estimate_stall_speed 
-from RCAIDE.Visualization                                                     import *       
+from RCAIDE.Energy.Networks.All_Electric                                       import All_Electric 
+from RCAIDE.Methods.Performance.estimate_cruise_drag                           import estimate_cruise_drag
+from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import segment_properties
+from RCAIDE.Methods.Power.Battery.Sizing                                       import initialize_from_circuit_configuration 
+from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion                    import nasa_motor
+from RCAIDE.Methods.Propulsion                                                 import size_optimal_motor
+from RCAIDE.Methods.Propulsion                                                 import design_propeller ,design_lift_rotor 
+from RCAIDE.Methods.Weights.Physics_Based_Buildups.eVTOL                       import compute_weight 
+from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import wing_segmented_planform 
+from RCAIDE.Methods.Weights.Physics_Based_Buildups.eVTOL.converge_evtol_weight import converge_evtol_weight  
+from RCAIDE.Methods.Performance.estimate_stall_speed                           import estimate_stall_speed 
+from RCAIDE.Visualization                                                      import *       
  
 import os
 import numpy as np 
@@ -954,7 +954,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics          = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero() 
+    aerodynamics          = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM() 
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     analyses.append(aerodynamics)   

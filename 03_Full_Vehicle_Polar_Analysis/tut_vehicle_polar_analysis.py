@@ -792,7 +792,7 @@ def compute_polars(vehicle,AoA_range,Mach,Alt):
     # ---------------------------------------------------------------------------------------
     # Surrogates
     # ---------------------------------------------------------------------------------------
-    aerodynamics                                                                        = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero()
+    aerodynamics                                                                        = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
     aerodynamics.settings.fuselage_lift_correction                                      = 1. 
     aerodynamics.process.compute.lift.inviscid_wings.settings.use_surrogate             = False
     aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vortex_distribution  = False

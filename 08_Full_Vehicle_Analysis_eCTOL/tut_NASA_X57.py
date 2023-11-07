@@ -6,12 +6,12 @@
 # RCAIDE imports 
 import RCAIDE
 from RCAIDE.Core import Units  
-from RCAIDE.Energy.Networks.All_Electric                 import All_Electric
-from RCAIDE.Methods.Propulsion                           import design_propeller,  size_optimal_motor 
-from RCAIDE.Methods.Weights.Correlations.Propulsion      import nasa_motor
-from RCAIDE.Methods.Power.Battery.Sizing                 import initialize_from_circuit_configuration
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform    import wing_segmented_planform
-from RCAIDE.Visualization                                import *     
+from RCAIDE.Energy.Networks.All_Electric                    import All_Electric
+from RCAIDE.Methods.Propulsion                              import design_propeller,  size_optimal_motor 
+from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion import nasa_motor
+from RCAIDE.Methods.Power.Battery.Sizing                    import initialize_from_circuit_configuration
+from RCAIDE.Methods.Geometry.Two_Dimensional.Planform       import wing_segmented_planform
+from RCAIDE.Visualization                                   import *     
 
 # python imports 
 import numpy as np 
@@ -632,7 +632,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero() 
+    aerodynamics = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM() 
     aerodynamics.geometry = vehicle 
     analyses.append(aerodynamics)  
  

@@ -93,7 +93,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Fidelity_Zero()
+    aerodynamics = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.number_spanwise_vortices   = 25
     aerodynamics.settings.number_chordwise_vortices  = 5   

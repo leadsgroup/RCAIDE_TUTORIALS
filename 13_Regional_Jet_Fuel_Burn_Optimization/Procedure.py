@@ -16,7 +16,7 @@ from RCAIDE.Methods.Propulsion.turbofan_sizing import turbofan_sizing
 from RCAIDE.Methods.Geometry.Two_Dimensional.Cross_Section.Propulsion.compute_turbofan_geometry import compute_turbofan_geometry
 #from RCAIDE.Methods.Center_of_Gravity.compute_component_centers_of_gravity import compute_component_centers_of_gravity
 #from RCAIDE.Methods.Center_of_Gravity.compute_aircraft_center_of_gravity import compute_aircraft_center_of_gravity
-from RCAIDE.Methods.Aerodynamics.Fidelity_Zero.Lift.compute_max_lift_coeff import compute_max_lift_coeff
+from RCAIDE.Methods.Aerodynamics.Subsonic_VLM.Lift.compute_max_lift_coeff import compute_max_lift_coeff
 from RCAIDE.Optimization.write_optimization_outputs import write_optimization_outputs
 
 # ----------------------------------------------------------------------        
