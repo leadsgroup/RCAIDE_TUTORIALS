@@ -30,19 +30,10 @@ def main():
     control_surface_deflection_angles  = np.linspace(-10,20,7)*Units.degrees
     airspeed                           = 300*Units['knots']
     altitude                           = 5000.0*Units.feet
-    alpha_range                        = np.linspace(-2,10,13)*Units.degrees
-    setup_vehicle_polar_analyses(vehicle,wing_tag,control_surface_tag,control_surface_deflection_angles,airspeed,altitude ,alpha_range)
-        
-    return 
- 
-# -----------------------------------------
-# Setup for Aircraft Polars  
-# -----------------------------------------
-def setup_vehicle_polar_analyses(vehicle,wing_tag,control_surface_tag,deflection_angles,V,Alt,alpha_range):
-    
-    MAC      = vehicle.wings['main_wing'].chords.mean_aerodynamic
-    S_ref    = vehicle.reference_area   
-    num_def = len(deflection_angles)
+    alpha_range                        = np.linspace(-2,10,13)*Units.degrees 
+    MAC                                = vehicle.wings['main_wing'].chords.mean_aerodynamic
+    S_ref                              = vehicle.reference_area   
+    num_def                            = len(control_surface_deflection_angles)
     
     #------------------------------------------------------------------------
     # setup figures
@@ -82,9 +73,9 @@ def setup_vehicle_polar_analyses(vehicle,wing_tag,control_surface_tag,deflection
     # setup flight conditions
     #------------------------------------------------------------------------ 
     atmosphere     = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
-    atmo_data      = atmosphere.compute_values(altitude=Alt) 
+    atmo_data      = atmosphere.compute_values(altitude=altitude) 
     a              = atmo_data.speed_of_sound[0] 
-    Mach           = V/a 
+    Mach           = airspeed/a 
     
     AoA_range  = np.atleast_2d(alpha_range).T  
     
@@ -100,14 +91,14 @@ def setup_vehicle_polar_analyses(vehicle,wing_tag,control_surface_tag,deflection
         # change control surface deflection  
          
         if CS_flag:
-            vehicle.wings[wing_tag].control_surfaces[control_surface_tag].deflection = deflection_angles[i] 
+            vehicle.wings[wing_tag].control_surfaces[control_surface_tag].deflection = control_surface_deflection_angles[i] 
         
         # get polar 
-        results    = compute_polars(vehicle,AoA_range,Mach,Alt)
+        results    = compute_polars(vehicle,AoA_range,Mach,altitude)
         
         if CS_flag:
             line_label =  wing_tag + '-' + control_surface_tag + ' ' +\
-                str(round( deflection_angles[i]/Units.degrees,3)) + '$\degree$ defl.'
+                str(round( control_surface_deflection_angles[i]/Units.degrees,3)) + '$\degree$ defl.'
         else: 
             line_label =  ''
         
@@ -116,6 +107,117 @@ def setup_vehicle_polar_analyses(vehicle,wing_tag,control_surface_tag,deflection
                     linestyle_2[i], linecolor_2[i],marker_2[i],line_label)
     axes1.legend(loc='upper left', prop={'size': 8})   
     return 
+
+
+# -----------------------------------------
+# Compute Aircraft Polars  
+# -----------------------------------------
+def compute_polars(vehicle,AoA_range,Mach,Alt):  
+
+    MAC            = vehicle.wings['main_wing'].chords.mean_aerodynamic 
+    atmosphere     = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    atmo_data      = atmosphere.compute_values(altitude=Alt)
+    P              = atmo_data.pressure[0]
+    T              = atmo_data.temperature[0]
+    rho            = atmo_data.density[0]  
+    a              = atmo_data.speed_of_sound[0]
+    mu             = atmo_data.dynamic_viscosity[0] 
+    V              = a*Mach
+    re             = (V*rho*MAC)/mu  
+    
+    n_aoa      = len(AoA_range) 
+    vortices   = 4
+
+    CL_Visc = np.zeros(n_aoa)
+    CD_Visc = np.zeros(n_aoa)
+
+    # ---------------------------------------------------------------------------------------
+    # Surrogates
+    # ---------------------------------------------------------------------------------------
+    aerodynamics                                                                        = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics.settings.fuselage_lift_correction                                      = 1. 
+    aerodynamics.process.compute.lift.inviscid_wings.settings.use_surrogate             = False
+    aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vortex_distribution  = False
+    aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vehicle              = False
+    aerodynamics.process.compute.lift.inviscid_wings.geometry                           = vehicle
+    aerodynamics.process.compute.lift.inviscid_wings.settings.model_fuselage            = True 
+    aerodynamics.geometry = vehicle
+    
+    state            = RCAIDE.Analyses.Mission.Common.State()
+    state.conditions = RCAIDE.Analyses.Mission.Common.Results() 
+    state.conditions.freestream.mach_number       = Mach  * np.ones_like(AoA_range)
+    state.conditions.freestream.density           = rho * np.ones_like(AoA_range)
+    state.conditions.freestream.dynamic_viscosity = mu  * np.ones_like(AoA_range)
+    state.conditions.freestream.temperature       = T   * np.ones_like(AoA_range)
+    state.conditions.freestream.pressure          = P   * np.ones_like(AoA_range)
+    state.conditions.freestream.reynolds_number   = re  * np.ones_like(AoA_range)
+    state.conditions.freestream.velocity          = V   * np.ones_like(AoA_range)
+    state.conditions.aerodynamics.angles.alpha    = AoA_range 
+ 
+    aerodynamics.process.compute.lift.inviscid_wings.initialize()     
+    results_aerodynamics = aerodynamics.evaluate(state) 
+    CL_Visc  = state.conditions.aerodynamics.lift_breakdown.total 
+    CD_Visc  = state.conditions.aerodynamics.drag_breakdown.total 
+ 
+    # -----------------------------------------------------------------
+    # VLM No Surrogate
+    # -----------------------------------------------------------------
+    settings = Data()
+    settings.use_surrogate = False
+    settings.number_spanwise_vortices         = vortices **2
+    settings.number_chordwise_vortices        = vortices
+    settings.propeller_wake_model             = False
+    settings.initial_timestep_offset          = 0
+    settings.wake_development_time            = 0.05
+    settings.use_bemt_wake_model              = False
+    settings.number_of_wake_timesteps         = 30
+    settings.leading_edge_suction_multiplier  = 1.0
+    settings.spanwise_cosine_spacing          = True
+    settings.model_fuselage                   = False
+    settings.model_nacelle                    = False
+    settings.wing_spanwise_vortices           = None
+    settings.wing_chordwise_vortices          = None
+    settings.fuselage_spanwise_vortices       = None
+    settings.discretize_control_surfaces      = True
+    settings.fuselage_chordwise_vortices      = None
+    settings.floating_point_precision         = np.float32
+    settings.use_VORLAX_matrix_calculation    = False 
+    settings.use_surrogate                    = True
+
+    # Raw  VLM analysis with no corrections
+    results =  VLM(state.conditions,settings,vehicle)
+    
+    # append viscous results to the results obtained from the inviscid VLM
+    results.CL_Visc = CL_Visc
+    results.CD_Visc = CD_Visc  
+    
+    return results    
+
+ 
+# -----------------------------------------
+# Plot Polars Aircraft Polars  
+# -----------------------------------------
+def plot_polars(axes1,axes2,axes3,axes4,AoA_range,Mach,results,linestyle_1, 
+                linecolor_1,marker_1,linestyle_2, linecolor_2,marker_2,line_label): 
+
+    CL_Inv  = results.CL
+    CDi_Inv = results.CDi
+    CM_Inv  = results.CM    
+    CL_Visc = results.CL_Visc 
+    CD_Visc = results.CD_Visc 
+    
+    axes1.plot(AoA_range/Units.degrees,CL_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1,label = line_label) 
+    axes1.plot(AoA_range/Units.degrees,CL_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2)  
+    
+    axes2.plot(AoA_range/Units.degrees,CDi_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
+    axes2.plot(AoA_range/Units.degrees,CD_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2) 
+     
+    axes3.plot(CL_Inv**2,CDi_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
+    axes3.plot(CL_Visc**2,CD_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2) 
+     
+    axes4.plot(AoA_range/Units.degrees,CM_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
+    
+    return
 
 # ----------------------------------------------------------------------
 #   Define the Vehicle
@@ -766,113 +868,6 @@ def vehicle_setup():
     vehicle.append_energy_network(net)     
         
     return vehicle
-
-# -----------------------------------------
-# Compute Aircraft Polars  
-# -----------------------------------------
-def compute_polars(vehicle,AoA_range,Mach,Alt):  
-
-    MAC            = vehicle.wings['main_wing'].chords.mean_aerodynamic 
-    atmosphere     = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
-    atmo_data      = atmosphere.compute_values(altitude=Alt)
-    P              = atmo_data.pressure[0]
-    T              = atmo_data.temperature[0]
-    rho            = atmo_data.density[0]  
-    a              = atmo_data.speed_of_sound[0]
-    mu             = atmo_data.dynamic_viscosity[0] 
-    V              = a*Mach
-    re             = (V*rho*MAC)/mu  
-    
-    n_aoa      = len(AoA_range) 
-    vortices   = 4
-
-    CL_Visc = np.zeros(n_aoa)
-    CD_Visc = np.zeros(n_aoa)
-
-    # ---------------------------------------------------------------------------------------
-    # Surrogates
-    # ---------------------------------------------------------------------------------------
-    aerodynamics                                                                        = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
-    aerodynamics.settings.fuselage_lift_correction                                      = 1. 
-    aerodynamics.process.compute.lift.inviscid_wings.settings.use_surrogate             = False
-    aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vortex_distribution  = False
-    aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vehicle              = False
-    aerodynamics.geometry = vehicle
-    #aerodynamics.initialize() 
-    
-    state            = RCAIDE.Analyses.Mission.Common.State()
-    state.conditions = RCAIDE.Analyses.Mission.Common.Results() 
-    state.conditions.freestream.mach_number       = Mach  * np.ones_like(AoA_range)
-    state.conditions.freestream.density           = rho * np.ones_like(AoA_range)
-    state.conditions.freestream.dynamic_viscosity = mu  * np.ones_like(AoA_range)
-    state.conditions.freestream.temperature       = T   * np.ones_like(AoA_range)
-    state.conditions.freestream.pressure          = P   * np.ones_like(AoA_range)
-    state.conditions.freestream.reynolds_number   = re  * np.ones_like(AoA_range)
-    state.conditions.freestream.velocity          = V   * np.ones_like(AoA_range)
-    state.conditions.aerodynamics.angle_of_attack = AoA_range 
-    results_aerodynamics = aerodynamics.evaluate(state) 
-    CL_Visc  = state.conditions.aerodynamics.lift_breakdown.total 
-    CD_Visc  = state.conditions.aerodynamics.drag_breakdown.total 
- 
-    # -----------------------------------------------------------------
-    # VLM No Surrogate
-    # -----------------------------------------------------------------
-    settings = Data()
-    settings.use_surrogate = False
-    settings.number_spanwise_vortices         = vortices **2
-    settings.number_chordwise_vortices        = vortices
-    settings.propeller_wake_model             = False
-    settings.initial_timestep_offset          = 0
-    settings.wake_development_time            = 0.05
-    settings.use_bemt_wake_model              = False
-    settings.number_of_wake_timesteps         = 30
-    settings.leading_edge_suction_multiplier  = 1.0
-    settings.spanwise_cosine_spacing          = True
-    settings.model_fuselage                   = False
-    settings.model_nacelle                    = False
-    settings.wing_spanwise_vortices           = None
-    settings.wing_chordwise_vortices          = None
-    settings.fuselage_spanwise_vortices       = None
-    settings.discretize_control_surfaces      = True
-    settings.fuselage_chordwise_vortices      = None
-    settings.floating_point_precision         = np.float32
-    settings.use_VORLAX_matrix_calculation    = False 
-    settings.use_surrogate                    = True
-
-    # Raw  VLM analysis with no corrections
-    results =  VLM(state.conditions,settings,vehicle)
-    
-    # append viscous results to the results obtained from the inviscid VLM
-    results.CL_Visc = CL_Visc
-    results.CD_Visc = CD_Visc  
-    
-    return results    
-
- 
-# -----------------------------------------
-# Plot Polars Aircraft Polars  
-# -----------------------------------------
-def plot_polars(axes1,axes2,axes3,axes4,AoA_range,Mach,results,linestyle_1, 
-                linecolor_1,marker_1,linestyle_2, linecolor_2,marker_2,line_label): 
-
-    CL_Inv  = results.CL
-    CDi_Inv = results.CDi
-    CM_Inv  = results.CM    
-    CL_Visc = results.CL_Visc 
-    CD_Visc = results.CD_Visc 
-    
-    axes1.plot(AoA_range/Units.degrees,CL_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1,label = line_label) 
-    axes1.plot(AoA_range/Units.degrees,CL_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2)  
-    
-    axes2.plot(AoA_range/Units.degrees,CDi_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
-    axes2.plot(AoA_range/Units.degrees,CD_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2) 
-     
-    axes3.plot(CL_Inv**2,CDi_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
-    axes3.plot(CL_Visc**2,CD_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2) 
-     
-    axes4.plot(AoA_range/Units.degrees,CM_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
-    
-    return
 
  
 

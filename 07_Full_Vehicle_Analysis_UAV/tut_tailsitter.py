@@ -5,9 +5,10 @@
 # ----------------------------------------------------------------------
 import RCAIDE
 from RCAIDE.Core import Units
-from RCAIDE.Energy.Networks.All_Electric import All_Electric
-from RCAIDE.Methods.Propulsion           import design_propeller, size_from_kv  
-from RCAIDE.Methods.Power.Battery.Sizing import initialize_from_mass 
+from RCAIDE.Energy.Networks.All_Electric                      import All_Electric 
+from RCAIDE.Methods.Power.Battery.Sizing                      import initialize_from_mass 
+from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion   import nasa_motor
+from RCAIDE.Methods.Propulsion                                import design_propeller ,size_optimal_motor
 from RCAIDE.Visualization  import *    
 
 import matplotlib.pyplot as plt
@@ -132,8 +133,7 @@ def vehicle_setup():
     esc_3            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
     esc_3.tag        = 'esc_3'
     esc_3.efficiency = 0.95 
-    bus.electronic_speed_controllers.append(esc_3)    
-    
+    bus.electronic_speed_controllers.append(esc_3)   
 
     esc_4            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
     esc_4.tag        = 'esc_4'
@@ -147,7 +147,7 @@ def vehicle_setup():
     propeller.number_of_blades                  = 2.0
     propeller.tip_radius                        = 4.    * Units.inch
     propeller.hub_radius                        = 0.125 * Units.inch
-    propeller.cruise.design_freestream_velocity = 15.0 # freestream m/s
+    propeller.cruise.design_freestream_velocity = 15.0 # freestream m/s 
     propeller.cruise.design_angular_velocity    = 7500. * Units['rpm']
     propeller.cruise.design_Cl                  = 0.7
     propeller.cruise.design_altitude            = 0.1 * Units.km
@@ -164,13 +164,20 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Motor
     #------------------------------------------------------------------------------------------------------------------------------------           
-    motor                      = RCAIDE.Energy.Converters.Motor()
-    motor.speed_constant       = 1500. * Units['rpm'] # RPM/volt converted to (rad/s)/volt 
-    motor                      = size_from_kv(motor)
-    motor.gear_ratio           = 1.  # Gear ratio
-    motor.gearbox_efficiency   = 1.  # Gear box efficiency
-    motor.expected_current     = 10. # Expected current
-    motor.rotor_radius         = prop.tip_radius
+    motor                         = RCAIDE.Energy.Converters.Motor() 
+    motor.efficiency              = 0.9
+    motor.nominal_voltage         = bat.pack.maximum_voltage 
+    motor.origin                  = propeller.origin 
+    motor.propeller_radius        = propeller.tip_radius 
+    motor.no_load_current         = 0.01  
+    motor.wing_mounted            = True 
+    motor.wing_tag                = 'main_wing'
+    motor.rotor_radius            = propeller.tip_radius
+    motor.design_torque           = propeller.cruise.design_torque
+    motor.angular_velocity        = propeller.cruise.design_angular_velocity/motor.gear_ratio  
+    motor                         = size_optimal_motor(motor)
+    motor.mass_properties.mass    = nasa_motor(motor.design_torque)    
+    
 
     for ii in range(4):
         rotor_motor = deepcopy(motor)
@@ -225,7 +232,7 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #  Weights
     weights = RCAIDE.Analyses.Weights.Weights()
-    weights.settings.empty_weight_method =  RCAIDE.Methods.Weights.Correlations.UAV.empty
+    weights.settings.empty_weight_method =  RCAIDE.Methods.Weights.Correlation_Buildups.UAV.empty
     weights.vehicle = vehicle
     analyses.append(weights)
     
@@ -279,33 +286,33 @@ def mission_setup(analyses):
     base_segment = Segments.Segment()    
     base_segment.state.numerics.number_control_points  = 3
 
-    #------------------------------------------------------------------    
-    #  Climb Hover
-    #------------------------------------------------------------------    
+    ##------------------------------------------------------------------    
+    ##  Climb Hover
+    ##------------------------------------------------------------------    
     
-    segment = RCAIDE.Analyses.Mission.Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
-    segment.tag = "Climb" 
-    segment.analyses.extend(analyses.base) 
-    ones_row                                   = segment.state.ones_row 
-    segment.initial_battery_state_of_charge    = 0.89 
-    segment.altitude_start                     = 0.
-    segment.altitude_end                       = 100. * Units.m
-    segment.climb_rate                         = 3.  * Units.m / Units.s 
-    segment.air_speed                          = 3.  * Units.m / Units.s
-    segment.state.unknowns.body_angle          = ones_row(1) * 90. *Units.deg 
-    segment                                    = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
-    mission.append_segment(segment)   
+    #segment = RCAIDE.Analyses.Mission.Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
+    #segment.tag = "Climb" 
+    #segment.analyses.extend(analyses.base) 
+    #ones_row                                   = segment.state.ones_row 
+    #segment.initial_battery_state_of_charge    = 0.89 
+    #segment.altitude_start                     = 0.
+    #segment.altitude_end                       = 100. * Units.m
+    #segment.climb_rate                         = 3.  * Units.m / Units.s 
+    #segment.air_speed                          = 3.  * Units.m / Units.s
+    #segment.state.unknowns.body_angle          = ones_row(1) * 90. *Units.deg 
+    #segment                                    = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    #mission.append_segment(segment)   
     
-    # ------------------------------------------------------------------    
-    #   Hover
-    # ------------------------------------------------------------------     
-    segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
-    segment.tag                                                  = "Hover_1" 
-    segment.analyses.extend(analyses.base) 
-    segment.time                                                 = 60* Units.seconds
-    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1) * 90.*Units.deg  
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
-    mission.append_segment(segment)    
+    ## ------------------------------------------------------------------    
+    ##   Hover
+    ## ------------------------------------------------------------------     
+    #segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
+    #segment.tag                                                  = "Hover_1" 
+    #segment.analyses.extend(analyses.base) 
+    #segment.time                                                 = 60* Units.seconds
+    #segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1) * 90.*Units.deg  
+    #segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    #mission.append_segment(segment)    
     
     # ------------------------------------------------------------------    
     #   Hover Transition
@@ -313,9 +320,10 @@ def mission_setup(analyses):
     segment                   = RCAIDE.Analyses.Mission.Segments.Cruise.Constant_Acceleration_Constant_Altitude(base_segment)
     segment.tag               = "Transition_to_Cruise" 
     segment.analyses.extend(analyses.base) 
+    segment.initial_battery_state_of_charge    = 0.89 
     segment.acceleration      = 1.5 * Units['m/s/s']
-    segment.air_speed_initial = 0.0
-    segment.air_speed_final   = 15.0 
+    segment.air_speed_start   = 0.0
+    segment.air_speed_end     = 15.0 
     segment.altitude          = 100. * Units.m 
     segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
     mission.append_segment(segment)   
@@ -340,41 +348,40 @@ def mission_setup(analyses):
     segment                                 = RCAIDE.Analyses.Mission.Segments.Cruise.Constant_Acceleration_Constant_Altitude(base_segment)
     segment.tag                             = "Transition_to_hover" 
     segment.analyses.extend(analyses.base) 
-    segment.acceleration                    = -0.5 * Units['m/s/s']
-    segment.air_speed_initial               = 15.0
-    segment.air_speed_final                 = 0.0 
+    segment.acceleration                    = -0.5 * Units['m/s/s'] 
+    segment.air_speed_end                   = 0.0 
     segment.altitude                        = 100. * Units.m 
     segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
     
     mission.append_segment(segment)  
     
-    # ------------------------------------------------------------------    
-    #   Hover
-    # ------------------------------------------------------------------     
-    segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
-    segment.tag                                                  = "Hover_2" 
-    segment.analyses.extend(analyses.base)                      
-    segment.time                                                 = 60* Units.seconds
-    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    ## ------------------------------------------------------------------    
+    ##   Hover
+    ## ------------------------------------------------------------------     
+    #segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
+    #segment.tag                                                  = "Hover_2" 
+    #segment.analyses.extend(analyses.base)                      
+    #segment.time                                                 = 60* Units.seconds
+    #segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg
+    #segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
     
-    mission.append_segment(segment)        
+    #mission.append_segment(segment)        
     
-    # ------------------------------------------------------------------    
-    #   Descent Hover
-    # ------------------------------------------------------------------      
-    segment              = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Descent(base_segment)
-    segment.tag          = "Descent" 
-    segment.analyses.extend(analyses.base) 
-    segment.altitude_end = 0. * Units.m
-    segment.descent_rate = 3. * Units.m / Units.s   
-    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg 
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
-    mission.append_segment(segment)       
+    ## ------------------------------------------------------------------    
+    ##   Descent Hover
+    ## ------------------------------------------------------------------      
+    #segment              = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Descent(base_segment)
+    #segment.tag          = "Descent" 
+    #segment.analyses.extend(analyses.base) 
+    #segment.altitude_end = 0. * Units.m
+    #segment.descent_rate = 3. * Units.m / Units.s   
+    #segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg 
+    #segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
+    #mission.append_segment(segment)       
     
-    #------------------------------------------------------------------    
-    #   Mission definition complete    
-    #-------------------------------------------------------------------
+    ##------------------------------------------------------------------    
+    ##   Mission definition complete    
+    ##-------------------------------------------------------------------
     
     return mission
 
@@ -419,7 +426,7 @@ def plot_mission(results):
     plot_battery_pack_conditions(results)
 
     # Plot propeller Disc and Power Loading
-    plot_rotor_disc_performance(results)  
+    plot_rotor_conditions(results)  
     
     return     
 
