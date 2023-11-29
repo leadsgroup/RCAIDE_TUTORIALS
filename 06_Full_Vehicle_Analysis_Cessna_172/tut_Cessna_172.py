@@ -5,9 +5,9 @@
 # ----------------------------------------------------------------------
 
 import RCAIDE
-from RCAIDE.Core               import Units  
-from RCAIDE.Methods.Propulsion import design_propeller 
-from RCAIDE.Visualization      import *    
+from RCAIDE.Core                       import Units  
+from RCAIDE.Methods.Propulsion.Design  import design_propeller 
+from RCAIDE.Visualization              import *    
  
 import matplotlib.pyplot as plt
 import numpy as np 

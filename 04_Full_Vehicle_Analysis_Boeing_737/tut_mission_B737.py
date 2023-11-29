@@ -13,7 +13,7 @@ passenger carrying aircraft. Here, the Boeing 737-800 model is used.
 import RCAIDE
 from RCAIDE.Core import Units   
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties   
-from RCAIDE.Methods.Propulsion                             import design_turbofan
+from RCAIDE.Methods.Propulsion.Design                      import design_turbofan
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties
 from RCAIDE.Visualization                 import *     
 
@@ -34,20 +34,20 @@ def main():
     # Set up vehicle configs
     configs  = configs_setup(vehicle)
 
-    # create analyses
-    analyses = analyses_setup(configs)
+    ## create analyses
+    #analyses = analyses_setup(configs)
 
-    # mission analyses 
-    mission = mission_setup(analyses)
+    ## mission analyses 
+    #mission = mission_setup(analyses)
     
-    # create mission instances (for multiple types of missions)
-    missions = missions_setup(mission) 
+    ## create mission instances (for multiple types of missions)
+    #missions = missions_setup(mission) 
      
-    # mission analysis 
-    results = missions.base_mission.evaluate()  
+    ## mission analysis 
+    #results = missions.base_mission.evaluate()  
     
-    # plot the results
-    plot_mission(results) 
+    ## plot the results
+    #plot_mission(results) 
     
     # plot vehicle 
     plot_3d_vehicle(configs.base,

@@ -10,7 +10,7 @@ The script below documents how to set up and plot the results of polar analysis 
 import RCAIDE
 from RCAIDE.Core                                           import Units , Data   
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties   
-from RCAIDE.Methods.Propulsion                             import design_turbofan 
+from RCAIDE.Methods.Propulsion.Design                      import design_turbofan 
 from RCAIDE.Visualization                                  import *      
 from RCAIDE.Methods.Aerodynamics.Fidelity_Zero             import VLM
 

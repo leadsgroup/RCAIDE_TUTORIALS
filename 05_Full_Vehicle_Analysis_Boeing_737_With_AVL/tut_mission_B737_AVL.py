@@ -9,8 +9,8 @@
 # RCAIDE Imports
 import RCAIDE 
 from RCAIDE.Core import Units
-from RCAIDE.Visualization         import *     
-from RCAIDE.Methods.Propulsion     import design_turbofan
+from RCAIDE.Visualization                  import *     
+from RCAIDE.Methods.Propulsion.Design      import design_turbofan
 
 import numpy as np  
 import matplotlib.pyplot as plt

@@ -15,8 +15,7 @@ from RCAIDE.Methods.Performance.estimate_cruise_drag                           i
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import segment_properties
 from RCAIDE.Methods.Power.Battery.Sizing                                       import initialize_from_circuit_configuration 
 from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion                    import nasa_motor
-from RCAIDE.Methods.Propulsion                                                 import size_optimal_motor
-from RCAIDE.Methods.Propulsion                                                 import design_propeller ,design_lift_rotor 
+from RCAIDE.Methods.Propulsion.Design                                          import size_optimal_motor, design_propeller ,design_lift_rotor 
 from RCAIDE.Methods.Weights.Physics_Based_Buildups.eVTOL                       import compute_weight 
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import wing_segmented_planform 
 from RCAIDE.Methods.Weights.Physics_Based_Buildups.eVTOL.converge_evtol_weight import converge_evtol_weight  

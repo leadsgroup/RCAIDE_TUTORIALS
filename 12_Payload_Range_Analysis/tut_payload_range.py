@@ -8,11 +8,10 @@
 #   Imports
 # ----------------------------------------------------------------------
 
-import RCAIDE
-assert RCAIDE.__version__=='1.0.0', 'These tutorials only work with the RCAIDE 1.0.0 release'
+import RCAIDE 
 from RCAIDE.Core import Units
-from RCAIDE.Methods.Propulsion.turbofan_sizing import turbofan_sizing
-from RCAIDE.Methods.Performance  import payload_range
+from RCAIDE.Methods.Propulsion.Design import design_turbofan
+from RCAIDE.Methods.Performance       import payload_range
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform import wing_planform
 from RCAIDE.Visualization  import *     
 import matplotlib.pyplot as plt
