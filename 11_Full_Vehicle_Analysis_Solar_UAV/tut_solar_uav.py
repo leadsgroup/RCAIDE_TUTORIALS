@@ -1,16 +1,15 @@
 # tut_solar_UAV.py
 # 
-# Created:  Jul 2014, E. Botero
-# Modified: Aug 2017, E. Botero
+# Created: Dec 2021, M.Clarke
 
 #----------------------------------------------------------------------
 #   Imports
 # ----------------------------------------------------------------------
 import RCAIDE 
-from RCAIDE.Visualization  import *    
-from RCAIDE.Core import Units 
-from RCAIDE.Energy.Networks.Solar import Solar
-from RCAIDE.Methods.Propulsion import design_propeller
+from RCAIDE.Visualization                import *    
+from RCAIDE.Core                         import Units 
+from RCAIDE.Energy.Networks.Solar        import Solar
+from RCAIDE.Methods.Propulsion.Design    import design_propeller
 from RCAIDE.Methods.Power.Battery.Sizing import initialize_from_mass
 
 import matplotlib.pyplot as plt

@@ -10,7 +10,7 @@ The script below documents how to set up and plot the results of an isolaed/stat
 import RCAIDE
 from RCAIDE.Core import Units, Data 
 from RCAIDE.Visualization  import *    
-from RCAIDE.Methods.Propulsion import design_propeller 
+from RCAIDE.Methods.Propulsion.Design import design_propeller 
 
 import os
 import numpy as np 

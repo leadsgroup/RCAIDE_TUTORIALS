@@ -13,7 +13,7 @@ passenger carrying aircraft. Here, the Boeing 737-800 model is used.
 import RCAIDE
 from RCAIDE.Core import Units   
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties   
-from RCAIDE.Methods.Propulsion                             import design_turbofan
+from RCAIDE.Methods.Propulsion.Design                      import design_turbofan
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties
 from RCAIDE.Visualization                 import *     
 
