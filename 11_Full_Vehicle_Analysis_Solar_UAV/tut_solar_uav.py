@@ -408,9 +408,7 @@ def mission_setup(analyses):
     segment.distance                        = 3050.0 * Units.km
     segment.initial_battery_state_of_charge = 0.3  
     segment.latitude                        = 37.4300   # this defaults to degrees (do not use Units.degrees)
-    segment.longitude                       = -122.1700 # this defaults to degrees 
-    segment                                 = analyses.base.energy.networks.solar.add_unknowns_and_residuals_to_segment(segment)     
-    
+    segment.longitude                       = -122.1700 # this defaults to degrees      
     mission.append_segment(segment)    
 
     # ------------------------------------------------------------------    
