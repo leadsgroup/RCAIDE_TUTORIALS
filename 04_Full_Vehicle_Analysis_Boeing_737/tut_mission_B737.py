@@ -589,7 +589,7 @@ def vehicle_setup():
     nacelle.length                        = 2.71
     nacelle.tag                           = 'nacelle_1'
     nacelle.inlet_diameter                = 2.0
-    nacelle.origin                        = [[13.5,4.38,-1.1]]
+    nacelle.origin                        = [[13.5,4.38,-1.5]]
     Awet                                  = 1.1*np.pi*nacelle.diameter*nacelle.length # 1.1 is simple coefficient
     nacelle.areas.wetted                  = Awet   
     nacelle.Airfoil.NACA_4_series_flag    = True 
@@ -633,7 +633,7 @@ def vehicle_setup():
         
     nacelle_2                             = deepcopy(nacelle)
     nacelle_2.tag                         = 'nacelle_2'
-    nacelle_2.origin                      = [[13.5,-4.38,-1.1]]
+    nacelle_2.origin                      = [[13.5,-4.38,-1.5]]
     
     vehicle.append_component(nacelle)   
     vehicle.append_component(nacelle_2)   
