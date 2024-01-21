@@ -7,10 +7,11 @@
 import RCAIDE
 from RCAIDE.Core import Units  
 from RCAIDE.Energy.Networks.All_Electric                                    import All_Electric
-from RCAIDE.Methods.Propulsion.Design                                       import design_propeller,  size_optimal_motor 
+from RCAIDE.Methods.Energy.Propulsion.Converters.Motor                      import size_optimal_motor
+from RCAIDE.Methods.Energy.Propulsion.Converters.Rotor                      import design_propeller  
 from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion                 import nasa_motor
-from RCAIDE.Methods.Power.Battery.Sizing                                    import initialize_from_circuit_configuration 
-from RCAIDE.Methods.Weights.Physics_Based_Buildups.Electric                 import converge_weight , compute_weight
+from RCAIDE.Methods.Energy.Sources.Battery.Sizing                           import  initialize_from_circuit_configuration  
+from RCAIDE.Methods.Weights.Physics_Based_Buildups.Electric                 import compute_weight , converge_weight
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                       import wing_segmented_planform
 from RCAIDE.Visualization                                                   import *     
 
@@ -145,7 +146,7 @@ def vehicle_setup():
     wing.dynamic_pressure_ratio           = 1.0   
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
-    rel_path                              = ospath.split( 'tut_electric_General_Aviation.py')[0]  +  '..' + separator   
+    rel_path                              = os.path.dirname(ospath) + separator + '..'+ separator     
     airfoil                               = RCAIDE.Components.Airfoils.Airfoil() 
     airfoil.coordinate_file               = rel_path + 'Airfoils' + separator + 'NACA_63_412.txt'   # absolute path         
     
@@ -467,13 +468,13 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bus                              = RCAIDE.Energy.Distribution.Bus_Power_Control_Unit() 
+    bus                              = RCAIDE.Energy.Networks.Distribution.Electrical_Bus() 
     bus.identical_propulsors        = False # only for regression 
 
     #------------------------------------------------------------------------------------------------------------------------------------           
     # Battery
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bat                                                    = RCAIDE.Energy.Storages.Batteries.Lithium_Ion_NMC() 
+    bat                                                    = RCAIDE.Energy.Sources.Batteries.Lithium_Ion_NMC() 
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 100
     initialize_from_circuit_configuration(bat)  
@@ -482,7 +483,7 @@ def vehicle_setup():
     bat.module.voltage                                     = bat.pack.maximum_voltage/bat.module.number_of_modules # assumes modules are connected in parallel, must be less than max_module_voltage (~50) /safety_factor (~ 1.5)  
     bat.module.geometrtic_configuration.normal_count       = 24
     bat.module.geometrtic_configuration.parallel_count     = 40
-    bat.thermal_management_system                          = RCAIDE.Energy.Thermal_Management.Batteries.Atmospheric_Air_Convection_Heat_Exchanger()      
+    bat.thermal_management_system.heat_acquisition_system  = RCAIDE.Energy.Thermal_Management.Batteries.Heat_Acquisition_Systems.Direct_Air()  
     bus.voltage                                            = bat.pack.maximum_voltage  
     bus.batteries.append(bat)            
     
@@ -490,16 +491,16 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Starboard Propulsor
     #------------------------------------------------------------------------------------------------------------------------------------   
-    starboard_propulsor  = RCAIDE.Energy.Propulsors.Propulsor()  
+    starboard_propulsor  = RCAIDE.Energy.Propulsion.Propulsor()  
  
     # Electronic Speed Controller      
-    esc            = RCAIDE.Energy.Propulsors.Modulators.Electronic_Speed_Controller()
+    esc            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc.tag        = 'esc_1'
     esc.efficiency = 0.95 
     starboard_propulsor.electronic_speed_controller = esc   
      
     # Propeller              
-    propeller                                        = RCAIDE.Energy.Propulsors.Converters.Propeller() 
+    propeller                                        = RCAIDE.Energy.Propulsion.Converters.Propeller() 
     propeller.tag                                    = 'propeller_1'  
     propeller.tip_radius                             = 1.72/2   
     propeller.number_of_blades                       = 3
@@ -526,7 +527,7 @@ def vehicle_setup():
     starboard_propulsor.rotor                        = propeller   
               
     # Motor       
-    motor                                            = RCAIDE.Energy.Propulsors.Converters.Motor()
+    motor                                            = RCAIDE.Energy.Propulsion.Converters.Motor()
     motor.efficiency                                 = 0.98
     motor.origin                                     = [[2.,  2.5, 0.95]]
     motor.nominal_voltage                            = bat.pack.maximum_voltage*0.5
@@ -544,7 +545,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Port Propulsor
     #------------------------------------------------------------------------------------------------------------------------------------   
-    port_propulsor                             = RCAIDE.Energy.Propulsors.Propulsor() 
+    port_propulsor                             = RCAIDE.Energy.Propulsion.Propulsor() 
             
     esc_2                                      = deepcopy(esc)
     esc_2.origin                               = [[2., -2.5, 0.95]]      

@@ -258,7 +258,7 @@ def vehicle_setup():
     net.identical_propellers                    = True
                                                 
     # the engine                    
-    engine                                  = RCAIDE.Energy.Converters.Internal_Combustion_Engine()
+    engine                                  = RCAIDE.Energy.Propulsion.Converters.Internal_Combustion_Engine()
     engine.sea_level_power                  = 180. * Units.horsepower
     engine.flat_rate_altitude               = 0.0
     engine.rated_speed                      = 2700. * Units.rpm
@@ -266,7 +266,7 @@ def vehicle_setup():
     net.engines.append(engine)
     
     # the prop
-    prop = RCAIDE.Energy.Converters.Propeller()
+    prop = RCAIDE.Energy.Propulsion.Converters.Propeller()
     prop.number_of_blades                      = 2.0
     prop.tip_radius                            = 2.14/2
     prop.hub_radius                            = 8.     * Units.inches

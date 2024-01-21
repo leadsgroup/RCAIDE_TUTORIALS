@@ -8,7 +8,7 @@ The script below documents how to set up and plot the results of a polar analysi
 # ---------------------------------------------------------------------
 from RCAIDE.Core import Units
 from RCAIDE.Methods.Aerodynamics.Airfoil_Panel_Method   import airfoil_analysis   
-from RCAIDE.Methods.Geometry.Two_Dimensional.Airfoil    import  compute_naca_4series
+from RCAIDE.Methods.Geometry.Two_Dimensional.Airfoil    import compute_naca_4series
 from RCAIDE.Visualization  import *    
 import matplotlib.pyplot as plt
 import numpy as np
