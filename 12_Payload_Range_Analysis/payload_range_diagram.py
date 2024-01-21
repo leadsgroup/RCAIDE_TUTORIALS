@@ -10,7 +10,7 @@
 
 import RCAIDE 
 from RCAIDE.Core import Units
-from RCAIDE.Methods.Propulsion.Design import design_turbofan
+from RCAIDE.Methods.Energy.Propulsion.Converters.Turbofan import design_turbofan
 from RCAIDE.Methods.Performance       import payload_range
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform import wing_planform
 from RCAIDE.Visualization  import *     
@@ -117,7 +117,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Stability Analysis
-    stability = RCAIDE.Analyses.Stability.Subsonic_VLM()
+    stability = RCAIDE.Analyses.Stability.Fidelity_Zero()
     stability.geometry = vehicle
     analyses.append(stability)
 
@@ -325,7 +325,7 @@ def vehicle_setup():
 
 
     #initialize the gas turbine network
-    gt_engine                   = RCAIDE.Energy.Networks.Turbofan()
+    gt_engine                   = RCAIDE.Energy.Networks.Turbofan_Engine()
     gt_engine.tag               = 'turbofan'
     gt_engine.origin            = [[12.0,4.38,-2.1],[12.0,-4.38,-2.1]]
     gt_engine.number_of_engines = 2.0
@@ -335,14 +335,14 @@ def vehicle_setup():
     gt_engine.working_fluid     = RCAIDE.Attributes.Gases.Air()
 
     #Component 1 : ram,  to convert freestream static to stagnation quantities
-    ram           = RCAIDE.Energy.Converters.Ram()
+    ram           = RCAIDE.Energy.Propulsion.Converters.Ram()
     ram.tag       = 'ram'
     #add ram to the network
     gt_engine.ram = ram
 
 
     #Component 2 : inlet nozzle
-    inlet_nozzle                       = RCAIDE.Energy.Converters.Compression_Nozzle()
+    inlet_nozzle                       = RCAIDE.Energy.Propulsion.Converters.Compression_Nozzle()
     inlet_nozzle.tag                   = 'inlet nozzle'
     inlet_nozzle.polytropic_efficiency = 0.98
     inlet_nozzle.pressure_ratio        = 0.98
@@ -351,7 +351,7 @@ def vehicle_setup():
 
 
     #Component 3 :low pressure compressor    
-    low_pressure_compressor                       = RCAIDE.Energy.Converters.Compressor()    
+    low_pressure_compressor                       = RCAIDE.Energy.Propulsion.Converters.Compressor()    
     low_pressure_compressor.tag                   = 'lpc'
     low_pressure_compressor.polytropic_efficiency = 0.91
     low_pressure_compressor.pressure_ratio        = 1.9    
@@ -359,7 +359,7 @@ def vehicle_setup():
     gt_engine.low_pressure_compressor             = low_pressure_compressor
 
     #Component 4 :high pressure compressor  
-    high_pressure_compressor                       = RCAIDE.Energy.Converters.Compressor()    
+    high_pressure_compressor                       = RCAIDE.Energy.Propulsion.Converters.Compressor()    
     high_pressure_compressor.tag                   = 'hpc'
     high_pressure_compressor.polytropic_efficiency = 0.91
     high_pressure_compressor.pressure_ratio        = 10.0   
@@ -367,7 +367,7 @@ def vehicle_setup():
     gt_engine.high_pressure_compressor             = high_pressure_compressor
 
     #Component 5 :low pressure turbine  
-    low_pressure_turbine                        = RCAIDE.Energy.Converters.Turbine()   
+    low_pressure_turbine                        = RCAIDE.Energy.Propulsion.Converters.Turbine()   
     low_pressure_turbine.tag                    ='lpt'
     low_pressure_turbine.mechanical_efficiency  = 0.99
     low_pressure_turbine.polytropic_efficiency  = 0.93
@@ -375,7 +375,7 @@ def vehicle_setup():
     gt_engine.low_pressure_turbine              = low_pressure_turbine
 
     #Component 5 :high pressure turbine  
-    high_pressure_turbine                       = RCAIDE.Energy.Converters.Turbine()   
+    high_pressure_turbine                       = RCAIDE.Energy.Propulsion.Converters.Turbine()   
     high_pressure_turbine.tag                   ='hpt'
     high_pressure_turbine.mechanical_efficiency = 0.99
     high_pressure_turbine.polytropic_efficiency = 0.93
@@ -383,7 +383,7 @@ def vehicle_setup():
     gt_engine.high_pressure_turbine             = high_pressure_turbine 
 
     #Component 6 :combustor  
-    combustor                           = RCAIDE.Energy.Converters.Combustor()   
+    combustor                           = RCAIDE.Energy.Propulsion.Converters.Combustor()   
     combustor.tag                       = 'Comb'
     combustor.efficiency                = 0.99 
     combustor.alphac                    = 1.0     
@@ -394,7 +394,7 @@ def vehicle_setup():
     gt_engine.combustor                 = combustor
 
     #Component 7 :core nozzle
-    core_nozzle                       = RCAIDE.Energy.Converters.Expansion_Nozzle()   
+    core_nozzle                       = RCAIDE.Energy.Propulsion.Converters.Expansion_Nozzle()   
     core_nozzle.tag                   = 'core nozzle'
     core_nozzle.polytropic_efficiency = 0.95
     core_nozzle.pressure_ratio        = 0.99    
@@ -402,7 +402,7 @@ def vehicle_setup():
     gt_engine.core_nozzle             = core_nozzle
 
     #Component 8 :fan nozzle
-    fan_nozzle                       = RCAIDE.Energy.Converters.Expansion_Nozzle()   
+    fan_nozzle                       = RCAIDE.Energy.Propulsion.Converters.Expansion_Nozzle()   
     fan_nozzle.tag                   = 'fan nozzle'
     fan_nozzle.polytropic_efficiency = 0.95
     fan_nozzle.pressure_ratio        = 0.99
@@ -410,7 +410,7 @@ def vehicle_setup():
     gt_engine.fan_nozzle             = fan_nozzle
 
     #Component 9 : fan   
-    fan                       = RCAIDE.Energy.Converters.Fan()   
+    fan                       = RCAIDE.Energy.Propulsion.Converters.Fan()   
     fan.tag                   = 'fan'
     fan.polytropic_efficiency = 0.93
     fan.pressure_ratio        = 1.7  
@@ -516,15 +516,7 @@ def mission_setup(analyses):
     # atmospheric model
     atmosphere = RCAIDE.Attributes.Atmospheres.Earth.US_Standard_1976()
     planet = RCAIDE.Attributes.Planets.Earth()
-
-    #airport
-    airport = RCAIDE.Attributes.Airports.Airport()
-    airport.altitude   =  0.0  * Units.ft
-    airport.delta_isa  =  0.0
-    airport.atmosphere = RCAIDE.Attributes.Atmospheres.Earth.US_Standard_1976()
-
-    mission.airport = airport
-
+ 
     # unpack Segments module
     Segments = RCAIDE.Analyses.Mission.Segments
 

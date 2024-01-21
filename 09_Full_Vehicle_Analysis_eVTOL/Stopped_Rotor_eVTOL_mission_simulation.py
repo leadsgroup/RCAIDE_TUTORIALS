@@ -12,10 +12,11 @@ import RCAIDE
 from RCAIDE.Core import Units, Data   
 from RCAIDE.Energy.Networks.All_Electric                                       import All_Electric 
 from RCAIDE.Methods.Performance.estimate_cruise_drag                           import estimate_cruise_drag
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import segment_properties
-from RCAIDE.Methods.Power.Battery.Sizing                                       import initialize_from_circuit_configuration 
+from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import segment_properties 
+from RCAIDE.Methods.Energy.Sources.Battery.Sizing                              import  initialize_from_circuit_configuration 
 from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion                    import nasa_motor
-from RCAIDE.Methods.Propulsion.Design                                          import size_optimal_motor, design_propeller ,design_lift_rotor 
+from RCAIDE.Methods.Energy.Propulsion.Converters.Motor                         import size_optimal_motor
+from RCAIDE.Methods.Energy.Propulsion.Converters.Rotor                         import design_propeller ,design_lift_rotor 
 from RCAIDE.Methods.Weights.Physics_Based_Buildups.Electric                    import compute_weight , converge_weight
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                          import wing_segmented_planform  
 from RCAIDE.Methods.Performance.estimate_stall_speed                           import estimate_stall_speed 
@@ -109,8 +110,9 @@ def vehicle_setup() :
     wing.vertical                 = False
     
     ospath                        = os.path.abspath(__file__)
+    ospath                        = os.path.abspath(__file__)
     separator                     = os.path.sep
-    rel_path                      = ospath.split( 'tut_eVTOL.py')[0]  +  '..' + separator   
+    rel_path                      = os.path.dirname(ospath) + separator + '..'+ separator    
     airfoil                       = RCAIDE.Components.Airfoils.Airfoil()
     airfoil.coordinate_file       = rel_path + 'Airfoils' + separator + 'NACA_63_412.txt'
     
@@ -652,11 +654,11 @@ def vehicle_setup() :
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Forward Bus
     #------------------------------------------------------------------------------------------------------------------------------------    
-    forward_bus                                            = RCAIDE.Energy.Distribution.Bus_Power_Control_Unit() 
+    forward_bus                                            = RCAIDE.Energy.Networks.Distribution.Electrical_Bus() 
     forward_bus.tag                                        = 'forward_bus'
      
     # Battery    
-    bat                                                    = RCAIDE.Energy.Storages.Batteries.Lithium_Ion_NMC() 
+    bat                                                    = RCAIDE.Energy.Sources.Batteries.Lithium_Ion_NMC() 
     bat.tag                                                = 'forward_bus_battery'
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 60
@@ -685,13 +687,13 @@ def vehicle_setup() :
     
         
     for propulsor_index in range(2): 
-        propulsor      = RCAIDE.Energy.Propulsors.Propulsor()
+        propulsor      = RCAIDE.Energy.Propulsion.Propulsor()
         propulsor.tag  = 'foward_propulsor_' + str(propulsor_index)  
     
         #------------------------------------------------------------------------------------------------------------------------------------  
         # Electronic Speed Controller    
         #------------------------------------------------------------------------------------------------------------------------------------  
-        propeller_esc                          = RCAIDE.Energy.Propulsors.Modulators.Electronic_Speed_Controller() 
+        propeller_esc                          = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller() 
         propeller_esc.efficiency               = 0.95  
         propeller_esc.tag                      = 'propeller_esc_' + str(propulsor_index) 
         propulsor.electronic_speed_controller  = propeller_esc     
@@ -704,7 +706,7 @@ def vehicle_setup() :
             speed_of_sound                              = 340                                    # speed of sound 
             Drag                                        = estimate_cruise_drag(vehicle,altitude = 1500. * Units.ft,speed= 130.* Units['mph'] ,lift_coefficient = 0.5 ,profile_drag = 0.06)
             Hover_Load                                  = vehicle.mass_properties.takeoff*g      # hover load    
-            propeller                                   = RCAIDE.Energy.Propulsors.Converters.Propeller()
+            propeller                                   = RCAIDE.Energy.Propulsion.Converters.Propeller()
             propeller.number_of_blades                  = 3
             propeller.tag                               = 'propeller_' + str(propulsor_index) 
             propeller.origin                            = [forward_propulsor_origins[propulsor_index]] 
@@ -741,7 +743,7 @@ def vehicle_setup() :
         # Propeller Motor Design - only need to design it once 
         #------------------------------------------------------------------------------------------------------------------------------------   
         if propulsor_index == 0:    
-            propeller_motor                       = RCAIDE.Energy.Propulsors.Converters.Motor()
+            propeller_motor                       = RCAIDE.Energy.Propulsion.Converters.Motor()
             propeller_motor.efficiency            = 0.95
             propeller_motor.tag                   = 'propeller_motor_' + str(propulsor_index)
             propeller_motor.origin                = propeller.origin
@@ -775,11 +777,11 @@ def vehicle_setup() :
                               [ 0.219 ,  4.891 , 1.2] ,[ 0.219  , - 4.891 , 1.2],
                               [ 4.196 ,  4.891 , 1.2] ,[ 4.196  , - 4.891 , 1.2]]  
     # Bus 
-    lift_bus                                               = RCAIDE.Energy.Distribution.Bus_Power_Control_Unit()
+    lift_bus                                               = RCAIDE.Energy.Networks.Distribution.Electrical_Bus()
     lift_bus.tag                                           = 'lift_bus' 
 
     # Battery    
-    bat                                                    = RCAIDE.Energy.Storages.Batteries.Lithium_Ion_NMC() 
+    bat                                                    = RCAIDE.Energy.Sources.Batteries.Lithium_Ion_NMC() 
     bat.tag                                                = 'lift_bus_battery'
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 20
@@ -806,11 +808,11 @@ def vehicle_setup() :
     
     for propulsor_index in range(8):   
 
-        propulsor                      = RCAIDE.Energy.Propulsors.Propulsor()
+        propulsor                      = RCAIDE.Energy.Propulsion.Propulsor()
         propulsor.tag                  = 'lift_propulsor_' + str(propulsor_index)              
         
         # Lift Propulsor System - Electronic Speed Controller 
-        lift_rotor_esc                 = RCAIDE.Energy.Propulsors.Modulators.Electronic_Speed_Controller()
+        lift_rotor_esc                 = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
         lift_rotor_esc.efficiency      = 0.95    
         lift_rotor_esc.tag             = 'lift_rotor_esc_' + str(propulsor_index) 
         lift_rotor_esc.origin          = [lift_propulsor_origins[propulsor_index]] 
@@ -820,7 +822,7 @@ def vehicle_setup() :
         # Lift Rotor Design - only need to design it once 
         #------------------------------------------------------------------------------------------------------------------------------------ 
         if propulsor_index == 0: 
-            lift_rotor                                   = RCAIDE.Energy.Propulsors.Converters.Lift_Rotor()   
+            lift_rotor                                   = RCAIDE.Energy.Propulsion.Converters.Lift_Rotor()   
             lift_rotor.tag                               = 'lift_rotor_' + str(propulsor_index) 
             lift_rotor.origin                            = [lift_propulsor_origins[propulsor_index]] 
             lift_rotor.active                            = True         
@@ -863,7 +865,7 @@ def vehicle_setup() :
         # Lift Rotor Motor Design - only need to design it once 
         #------------------------------------------------------------------------------------------------------------------------------------   
         if propulsor_index == 0: 
-            lift_rotor_motor                         = RCAIDE.Energy.Propulsors.Converters.Motor()
+            lift_rotor_motor                         = RCAIDE.Energy.Propulsion.Converters.Motor()
             lift_rotor_motor.efficiency              = 0.9
             lift_rotor_motor.nominal_voltage         = bat.pack.maximum_voltage*3/4  
             lift_rotor_motor.origin                  = lift_rotor.origin 

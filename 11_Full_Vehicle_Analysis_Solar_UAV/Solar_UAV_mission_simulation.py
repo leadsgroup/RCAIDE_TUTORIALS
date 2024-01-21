@@ -6,11 +6,11 @@
 #   Imports
 # ----------------------------------------------------------------------
 import RCAIDE 
-from RCAIDE.Visualization                import *    
-from RCAIDE.Core                         import Units 
-from RCAIDE.Energy.Networks.Solar        import Solar
-from RCAIDE.Methods.Propulsion.Design    import design_propeller
-from RCAIDE.Methods.Power.Battery.Sizing import initialize_from_mass
+from RCAIDE.Visualization                                 import *    
+from RCAIDE.Core                                          import Units 
+from RCAIDE.Energy.Networks.Solar                         import Solar
+from RCAIDE.Methods.Energy.Propulsion.Converters.Rotor    import design_propeller
+from RCAIDE.Methods.Energy.Sources.Battery.Sizing         import initialize_from_mass
 
 import matplotlib.pyplot as plt
 import numpy as np 
@@ -200,14 +200,14 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bus                        = RCAIDE.Energy.Distributors.Bus_Power_Control_Unit()
+    bus                        = RCAIDE.Energy.Networks.Distribution.Electrical_Bus()
     bus.fixed_voltage          = True 
     bus.voltage                = 120.0
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Solar Panel 
     #------------------------------------------------------------------------------------------------------------------------------------ 
-    panel                      = RCAIDE.Energy.Converters.Solar_Panel()
+    panel                      = RCAIDE.Energy.Propulsion.Converters.Solar_Panel()
     panel.area                 = vehicle.reference_area * 0.9
     panel.efficiency           = 0.25
     panel.mass_properties.mass = panel.area*(0.60 * Units.kg)
@@ -217,7 +217,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Electronic Speed Controller    
     #------------------------------------------------------------------------------------------------------------------------------------ 
-    esc            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc)  
 
@@ -225,7 +225,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------           
     # Battery
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bat = RCAIDE.Energy.Storages.Batteries.Lithium_Ion_Generic() 
+    bat = RCAIDE.Energy.Sources.Batteries.Lithium_Ion_Generic() 
     bat.mass_properties.mass = 95.0 * Units.kg
     bat.specific_energy      = 800. * Units.Wh/Units.kg
     bat.pack.maximum_voltage = 130.0
@@ -235,7 +235,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Propeller    
     #------------------------------------------------------------------------------------------------------------------------------------    
-    propeller                                   = RCAIDE.Energy.Converters.Propeller()
+    propeller                                   = RCAIDE.Energy.Propulsion.Converters.Propeller()
     propeller.number_of_blades                  = 2.0
     propeller.tip_radius                        = 4.25 * Units.meters
     propeller.hub_radius                        = 0.05 * Units.meters
@@ -251,7 +251,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------           
     # Motor 
     #------------------------------------------------------------------------------------------------------------------------------------   
-    motor                      = RCAIDE.Energy.Converters.Motor() 
+    motor                      = RCAIDE.Energy.Propulsion.Converters.Motor() 
     motor.resistance           = 0.006
     motor.no_load_current      = 2.5  * Units.ampere
     motor.speed_constant       = 30. * Units['rpm'] # RPM/volt converted to (rad/s)/volt    

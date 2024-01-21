@@ -10,7 +10,7 @@ The script below documents how to set up and plot the results of polar analysis 
 import RCAIDE
 from RCAIDE.Core                                           import Units , Data   
 from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import segment_properties   
-from RCAIDE.Methods.Propulsion.Design                      import design_turbofan 
+from RCAIDE.Methods.Energy.Propulsion.Converters.Turbofan  import design_turbofan 
 from RCAIDE.Visualization                                  import *      
 from RCAIDE.Methods.Aerodynamics.Fidelity_Zero             import VLM
 
@@ -224,9 +224,8 @@ def plot_polars(axes1,axes2,axes3,axes4,AoA_range,Mach,results,linestyle_1,
 # ----------------------------------------------------------------------
 
 def vehicle_setup():
-    """This is the full physical definition of the vehicle, and is designed to be independent of the
-    analyses that are selected."""
-    
+   
+
     # ------------------------------------------------------------------
     #   Initialize the Vehicle
     # ------------------------------------------------------------------    
@@ -234,7 +233,7 @@ def vehicle_setup():
     vehicle = RCAIDE.Vehicle()
     vehicle.tag = 'Boeing_737-800'    
     
-    # ################################################# Vehicle-level Properties ########################################################   
+    # ################################################# Vehicle-level Properties #################################################   
     vehicle.mass_properties.max_takeoff               = 79015.8 * Units.kilogram  
     vehicle.mass_properties.takeoff                   = 79015.8 * Units.kilogram    
     vehicle.mass_properties.operating_empty           = 62746.4 * Units.kilogram  
@@ -247,7 +246,7 @@ def vehicle_setup():
     vehicle.systems.control                           = "fully powered" 
     vehicle.systems.accessories                       = "medium range"
 
-    # ################################################# Landing Gear #####################################################################   
+    # ################################################# Landing Gear #############################################################   
     # ------------------------------------------------------------------        
     #  Landing Gear
     # ------------------------------------------------------------------  
@@ -295,7 +294,7 @@ def vehicle_setup():
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
     rel_path                              = os.path.dirname(ospath) + separator   
-    root_airfoil.coordinate_file          = rel_path + '..' + separator + 'Airfoils' + separator + 'B737a.txt'
+    root_airfoil.coordinate_file          = rel_path + '..' + separator + 'Airfoils' + separator  + 'B737a.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Root'
     segment.percent_span_location         = 0.0
@@ -309,7 +308,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     yehudi_airfoil                        = RCAIDE.Components.Airfoils.Airfoil()
-    yehudi_airfoil.coordinate_file        =  rel_path + '..' + separator + 'Airfoils' + separator + 'B737b.txt'
+    yehudi_airfoil.coordinate_file        = rel_path + '..' + separator + 'Airfoils' + separator  + 'B737b.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Yehudi'
     segment.percent_span_location         = 0.324
@@ -323,7 +322,7 @@ def vehicle_setup():
     wing.append_segment(segment)
 
     mid_airfoil                           = RCAIDE.Components.Airfoils.Airfoil()
-    mid_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator + 'B737c.txt'
+    mid_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator  + 'B737c.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Section_2'
     segment.percent_span_location         = 0.963
@@ -336,8 +335,8 @@ def vehicle_setup():
     segment.append_airfoil(mid_airfoil)
     wing.append_segment(segment)
 
-    tip_airfoil                           =  RCAIDE.Components.Airfoils.Airfoil()
-    tip_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator + 'B737d.txt'
+    tip_airfoil                           = RCAIDE.Components.Airfoils.Airfoil()
+    tip_airfoil.coordinate_file           = rel_path + '..' + separator + 'Airfoils' + separator  + 'B737d.txt'
     segment                               = RCAIDE.Components.Wings.Segment()
     segment.tag                           = 'Tip'
     segment.percent_span_location         = 1.
@@ -522,7 +521,7 @@ def vehicle_setup():
     # add to vehicle
     vehicle.append_component(wing)
 
-    # ################################################# Fuselage #####################################################################  
+    # ################################################# Fuselage ################################################################ 
     
     fuselage                                    = RCAIDE.Components.Fuselages.Fuselage()
     fuselage.tag                                = 'fuselage' 
@@ -696,7 +695,7 @@ def vehicle_setup():
     nacelle.length                        = 2.71
     nacelle.tag                           = 'nacelle_1'
     nacelle.inlet_diameter                = 2.0
-    nacelle.origin                        = [[13.5,4.38,-1.1]]
+    nacelle.origin                        = [[13.5,4.38,-1.5]]
     Awet                                  = 1.1*np.pi*nacelle.diameter*nacelle.length # 1.1 is simple coefficient
     nacelle.areas.wetted                  = Awet   
     nacelle.Airfoil.NACA_4_series_flag    = True 
@@ -740,27 +739,27 @@ def vehicle_setup():
         
     nacelle_2                             = deepcopy(nacelle)
     nacelle_2.tag                         = 'nacelle_2'
-    nacelle_2.origin                      = [[13.5,-4.38,-1.1]]
+    nacelle_2.origin                      = [[13.5,-4.38,-1.5]]
     
     vehicle.append_component(nacelle)   
     vehicle.append_component(nacelle_2)   
 
-    # ################################################# Energy Network ##################################################################          
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    # ################################################# Energy Network #######################################################         
+    #------------------------------------------------------------------------------------------------------------------------- 
     #  Turbofan Network
-    #------------------------------------------------------------------------------------------------------------------------------------    
+    #-------------------------------------------------------------------------------------------------------------------------   
     net                                         = RCAIDE.Energy.Networks.Turbofan_Engine() 
     
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     # Fuel Distrubition Line 
-    #------------------------------------------------------------------------------------------------------------------------------------  
-    fuel_line                                   = RCAIDE.Energy.Distributors.Fuel_Line() 
+    #------------------------------------------------------------------------------------------------------------------------- 
+    fuel_line                                   = RCAIDE.Energy.Networks.Distribution.Fuel_Line() 
     
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     #   Fuel
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    #------------------------------------------------------------------------------------------------------------------------- 
     # fuel tank
-    fuel_tank                                   = RCAIDE.Energy.Storages.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                   = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.origin                            = wing.origin 
     
     # fuel 
@@ -771,18 +770,24 @@ def vehicle_setup():
     fuel.internal_volume                        = fuel.mass_properties.mass/fuel.density  
     fuel_tank.fuel                              = fuel  
     fuel_line.fuel_tanks.append(fuel_tank) 
+    
+
+    #------------------------------------------------------------------------------------------------------------------------------------  
+    #  Propulsor
+    #------------------------------------------------------------------------------------------------------------------------------------   
+    starboard_propulsor                         = RCAIDE.Energy.Propulsion.Propulsor()     
      
-    turbofan                                    = RCAIDE.Energy.Converters.Turbofan() 
-    turbofan.tag                                = 'turbofan'
+    turbofan                                    = RCAIDE.Energy.Propulsion.Converters.Turbofan() 
+    turbofan.tag                                = 'pratt_whitney_jt9d'
     turbofan.origin                             = [[13.72, 4.86,-1.1]] 
     turbofan.engine_length                      = 2.71     
-    turbofan.bypass_ratio                       = 5.4   
+    turbofan.bypass_ratio                       = 5.4    
     turbofan.design_altitude                    = 35000.0*Units.ft
     turbofan.design_mach_number                 = 0.78   
-    turbofan.design_thrust                      = 37278.0* Units.N/2 
+    turbofan.design_thrust                      = 35000.0* Units.N    
              
     # fan                
-    fan                                         = RCAIDE.Energy.Converters.Fan()   
+    fan                                         = RCAIDE.Energy.Propulsion.Converters.Fan()   
     fan.tag                                     = 'fan'
     fan.polytropic_efficiency                   = 0.93
     fan.pressure_ratio                          = 1.7   
@@ -790,12 +795,12 @@ def vehicle_setup():
                    
     # working fluid                   
     turbofan.working_fluid                      = RCAIDE.Attributes.Gases.Air() 
-    ram                                         = RCAIDE.Energy.Converters.Ram()
+    ram                                         = RCAIDE.Energy.Propulsion.Converters.Ram()
     ram.tag                                     = 'ram' 
     turbofan.ram                                = ram 
           
     # inlet nozzle          
-    inlet_nozzle                                = RCAIDE.Energy.Converters.Compression_Nozzle()
+    inlet_nozzle                                = RCAIDE.Energy.Propulsion.Converters.Compression_Nozzle()
     inlet_nozzle.tag                            = 'inlet nozzle'
     inlet_nozzle.polytropic_efficiency          = 0.98
     inlet_nozzle.pressure_ratio                 = 0.98 
@@ -803,35 +808,35 @@ def vehicle_setup():
 
 
     # low pressure compressor    
-    low_pressure_compressor                       = RCAIDE.Energy.Converters.Compressor()    
+    low_pressure_compressor                       = RCAIDE.Energy.Propulsion.Converters.Compressor()    
     low_pressure_compressor.tag                   = 'lpc'
     low_pressure_compressor.polytropic_efficiency = 0.91
     low_pressure_compressor.pressure_ratio        = 1.9   
     turbofan.low_pressure_compressor              = low_pressure_compressor
 
     # high pressure compressor  
-    high_pressure_compressor                       = RCAIDE.Energy.Converters.Compressor()    
+    high_pressure_compressor                       = RCAIDE.Energy.Propulsion.Converters.Compressor()    
     high_pressure_compressor.tag                   = 'hpc'
     high_pressure_compressor.polytropic_efficiency = 0.91
     high_pressure_compressor.pressure_ratio        = 10.0    
     turbofan.high_pressure_compressor              = high_pressure_compressor
 
     # low pressure turbine  
-    low_pressure_turbine                           = RCAIDE.Energy.Converters.Turbine()   
+    low_pressure_turbine                           = RCAIDE.Energy.Propulsion.Converters.Turbine()   
     low_pressure_turbine.tag                       ='lpt'
     low_pressure_turbine.mechanical_efficiency     = 0.99
     low_pressure_turbine.polytropic_efficiency     = 0.93 
     turbofan.low_pressure_turbine                  = low_pressure_turbine
    
     # high pressure turbine     
-    high_pressure_turbine                          = RCAIDE.Energy.Converters.Turbine()   
+    high_pressure_turbine                          = RCAIDE.Energy.Propulsion.Converters.Turbine()   
     high_pressure_turbine.tag                      ='hpt'
     high_pressure_turbine.mechanical_efficiency    = 0.99
     high_pressure_turbine.polytropic_efficiency    = 0.93 
     turbofan.high_pressure_turbine                 = high_pressure_turbine 
 
     # combustor  
-    combustor                                      = RCAIDE.Energy.Converters.Combustor()   
+    combustor                                      = RCAIDE.Energy.Propulsion.Converters.Combustor()   
     combustor.tag                                  = 'Comb'
     combustor.efficiency                           = 0.99 
     combustor.alphac                               = 1.0     
@@ -841,14 +846,14 @@ def vehicle_setup():
     turbofan.combustor                             = combustor
 
     # core nozzle
-    core_nozzle                                    = RCAIDE.Energy.Converters.Expansion_Nozzle()   
+    core_nozzle                                    = RCAIDE.Energy.Propulsion.Converters.Expansion_Nozzle()   
     core_nozzle.tag                                = 'core nozzle'
     core_nozzle.polytropic_efficiency              = 0.95
     core_nozzle.pressure_ratio                     = 0.99  
     turbofan.core_nozzle                           = core_nozzle
              
     # fan nozzle             
-    fan_nozzle                                     = RCAIDE.Energy.Converters.Expansion_Nozzle()   
+    fan_nozzle                                     = RCAIDE.Energy.Propulsion.Converters.Expansion_Nozzle()   
     fan_nozzle.tag                                 = 'fan nozzle'
     fan_nozzle.polytropic_efficiency               = 0.95
     fan_nozzle.pressure_ratio                      = 0.99 
@@ -857,15 +862,37 @@ def vehicle_setup():
     # design turbofan
     design_turbofan(turbofan) 
     
-    fuel_line.turbofans.append(turbofan)
+    starboard_propulsor.turbofan = turbofan 
 
-    turbofan_2                      = deepcopy(turbofan)
-    turbofan_2.tag                  = 'propeller_2' 
-    turbofan_2.origin               = [[13.72, -4.86,-1.1]] 
-    fuel_line.turbofans.append(turbofan_2)    
+    # append propulsor to distribution line 
+    fuel_line.propulsors.append(starboard_propulsor)  
 
-    net.fuel_lines.append(fuel_line)    
+    #------------------------------------------------------------------------------------------------------------------------------------  
+    # Port Propulsor
+    #------------------------------------------------------------------------------------------------------------------------------------     
+
+    port_propulsor                         = RCAIDE.Energy.Propulsion.Propulsor() 
+    
+    # copy turbofan
+    turbofan_2                             = deepcopy(turbofan)
+    turbofan_2.tag                         = 'turbofan_2' 
+    turbofan_2.origin                      = [[13.72,-4.38,-1.1]]  # change origin
+    
+    # append turbofan to propulsor data class 
+    port_propulsor.turbofan                = turbofan_2 
+    
+    # append propulsor to distribution line 
+    fuel_line.propulsors.append(port_propulsor)
+
+    #------------------------------------------------------------------------------------------------------------------------------------     
+    
+    # Append fuel line to network      
+    net.fuel_lines.append(fuel_line)        
+    
+    # Append energy network to aircraft 
     vehicle.append_energy_network(net)     
+ 
+    vehicle.center_of_gravity()        
         
     return vehicle
 

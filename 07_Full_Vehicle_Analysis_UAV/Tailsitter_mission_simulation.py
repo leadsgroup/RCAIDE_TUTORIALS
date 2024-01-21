@@ -103,7 +103,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bus                              = RCAIDE.Energy.Distributors.Bus_Power_Control_Unit()
+    bus                              = RCAIDE.Energy.Networks.Distribution.Electrical_Bus()
     bus.fixed_voltage                = False 
   
     #------------------------------------------------------------------------------------------------------------------------------------  
@@ -120,22 +120,22 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Electronic Speed Controller    
     #------------------------------------------------------------------------------------------------------------------------------------  
-    esc_1            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc_1            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc_1.tag        = 'esc_1'
     esc_1.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_1)  
  
-    esc_2            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc_2            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc_2.tag        = 'esc_2'
     esc_2.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_2)    
 
-    esc_3            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc_3            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc_3.tag        = 'esc_3'
     esc_3.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_3)   
 
-    esc_4            = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc_4            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc_4.tag        = 'esc_4'
     esc_4.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_4)   
@@ -143,7 +143,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Propeller    
     #------------------------------------------------------------------------------------------------------------------------------------           
-    propeller                                   = RCAIDE.Energy.Converters.Propeller()  
+    propeller                                   = RCAIDE.Energy.Propulsion.Converters.Propeller()  
     propeller.number_of_blades                  = 2.0
     propeller.tip_radius                        = 4.    * Units.inch
     propeller.hub_radius                        = 0.125 * Units.inch
@@ -164,7 +164,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Motor
     #------------------------------------------------------------------------------------------------------------------------------------           
-    motor                         = RCAIDE.Energy.Converters.Motor() 
+    motor                         = RCAIDE.Energy.Propulsion.Converters.Motor() 
     motor.efficiency              = 0.9
     motor.nominal_voltage         = bat.pack.maximum_voltage 
     motor.origin                  = propeller.origin 
@@ -355,33 +355,33 @@ def mission_setup(analyses):
     
     mission.append_segment(segment)  
     
-    ## ------------------------------------------------------------------    
-    ##   Hover
-    ## ------------------------------------------------------------------     
-    #segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
-    #segment.tag                                                  = "Hover_2" 
-    #segment.analyses.extend(analyses.base)                      
-    #segment.time                                                 = 60* Units.seconds
-    #segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg
-    #segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    # ------------------------------------------------------------------    
+    #   Hover
+    # ------------------------------------------------------------------     
+    segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
+    segment.tag                                                  = "Hover_2" 
+    segment.analyses.extend(analyses.base)                      
+    segment.time                                                 = 60* Units.seconds
+    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg
+    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
     
-    #mission.append_segment(segment)        
+    mission.append_segment(segment)        
     
-    ## ------------------------------------------------------------------    
-    ##   Descent Hover
-    ## ------------------------------------------------------------------      
-    #segment              = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Descent(base_segment)
-    #segment.tag          = "Descent" 
-    #segment.analyses.extend(analyses.base) 
-    #segment.altitude_end = 0. * Units.m
-    #segment.descent_rate = 3. * Units.m / Units.s   
-    #segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg 
-    #segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
-    #mission.append_segment(segment)       
+    # ------------------------------------------------------------------    
+    #   Descent Hover
+    # ------------------------------------------------------------------      
+    segment              = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Descent(base_segment)
+    segment.tag          = "Descent" 
+    segment.analyses.extend(analyses.base) 
+    segment.altitude_end = 0. * Units.m
+    segment.descent_rate = 3. * Units.m / Units.s   
+    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg 
+    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
+    mission.append_segment(segment)       
     
-    ##------------------------------------------------------------------    
-    ##   Mission definition complete    
-    ##-------------------------------------------------------------------
+    #------------------------------------------------------------------    
+    #   Mission definition complete    
+    #-------------------------------------------------------------------
     
     return mission
 

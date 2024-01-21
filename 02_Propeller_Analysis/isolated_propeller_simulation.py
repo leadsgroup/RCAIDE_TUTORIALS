@@ -10,7 +10,7 @@ The script below documents how to set up and plot the results of an isolaed/stat
 import RCAIDE
 from RCAIDE.Core import Units, Data 
 from RCAIDE.Visualization  import *    
-from RCAIDE.Methods.Propulsion.Design import design_propeller 
+from RCAIDE.Methods.Energy.Propulsion.Converters.Rotor import design_propeller 
 
 import os
 import numpy as np 
@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 # ---------------------------------------------------------------------- 
 def main(): 
  
-    prop                                     = RCAIDE.Energy.Converters.Propeller() 
+    prop                                     = RCAIDE.Energy.Propulsion.Converters.Propeller() 
     prop.number_of_blades                    = 3
     prop.number_of_engines                   = 1
     prop.tip_radius                          = 1.0668
@@ -33,10 +33,10 @@ def main():
     prop.cruise.design_altitude              = 1. * Units.km 
     prop.cruise.design_thrust                = 3054.4809132125697
   
-    # define first airfoil   
+    # define first airfoil    
     ospath                                     = os.path.abspath(__file__)
     separator                                  = os.path.sep
-    rel_path                                   = ospath.split( 'tut_propeller_analysis.py')[0]  +  '..' + separator   
+    rel_path                                   = os.path.dirname(ospath) + separator + '..'+ separator    
     airfoil_1                                  = RCAIDE.Components.Airfoils.Airfoil()
     airfoil_1.tag                              = 'NACA_4412' 
     airfoil_1.coordinate_file                  = rel_path + 'Airfoils' + separator + 'NACA_4412.txt'   # absolute path   

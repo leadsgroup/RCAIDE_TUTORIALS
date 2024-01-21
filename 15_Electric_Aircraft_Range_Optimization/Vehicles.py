@@ -11,7 +11,7 @@ from copy import deepcopy
 
 import RCAIDE 
 from RCAIDE.Core                                                              import Data , Units 
-from RCAIDE.Energy.Networks.Battery_Electric_Rotor                 import Battery_Electric_Rotor
+from RCAIDE.Energy.Networks.Battery_Electric_Rotor                            import Battery_Electric_Rotor
 from RCAIDE.Methods.Propulsion                                                import design_propeller 
 from RCAIDE.Methods.Power.Battery.Sizing                                      import initialize_from_circuit_configuration  
 from RCAIDE.Methods.Propulsion.electric_motor_sizing                          import size_optimal_motor
@@ -418,19 +418,19 @@ def base_vehicle_setup() :
     net.esc_group_indexes   = [0,0]    
 
     # Component 1: ESC
-    esc_1                     = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc_1                     = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc_1.efficiency          = 0.95 
     esc_1.tag                 = 'esc_1'
     net.electronic_speed_controllers.append(esc_1)     
 
-    esc_2                     = RCAIDE.Energy.Distributors.Electronic_Speed_Controller()
+    esc_2                     = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
     esc_2.efficiency          = 0.95 
     esc_2.tag                 = 'esc_2'
     net.electronic_speed_controllers.append(esc_2)      
      
     
     # Component 2: Propeller 
-    propeller                                   = RCAIDE.Energy.Converters.Propeller()
+    propeller                                   = RCAIDE.Energy.Propulsion.Converters.Propeller()
     propeller.number_of_blades                  = 3 
     propeller.tag                               = 'propeller_1'  
     propeller.tip_radius                        = 1.72/2   
@@ -469,7 +469,7 @@ def base_vehicle_setup() :
     net.rotors.append(propeller_left) 
                  
     # Component 3: Battery       
-    bat                                                    = RCAIDE.Energy.Storages.Batteries.Constant_Mass.Lithium_Ion_LiNiMnCoO2_18650() 
+    bat                                                    = RCAIDE.Energy.Sources.Batteries.Lithium_Ion_NMC() 
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 100
     initialize_from_circuit_configuration(bat)  
@@ -486,7 +486,7 @@ def base_vehicle_setup() :
     sys.mass_properties.mass  = 5 # kg
  
     # Component 5: Motor   
-    propeller_motor                         = RCAIDE.Energy.Converters.Motor()
+    propeller_motor                         = RCAIDE.Energy.Propulsion.Converters.Motor()
     propeller_motor.efficiency              = 0.95
     propeller_motor.gearbox_efficiency      = 1.
     propeller_motor.origin                  = [[2.,  2.5, 0.784]]
