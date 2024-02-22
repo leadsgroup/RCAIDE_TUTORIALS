@@ -45,29 +45,7 @@ def main():
     # plot the results
     plot_mission(results)
 
-    return
-
-# ----------------------------------------------------------------------
-#   Analysis Setup
-# ----------------------------------------------------------------------
-
-def full_setup():
-
-    # vehicle data
-    vehicle  = vehicle_setup()
-    configs  = configs_setup(vehicle)
-
-    # vehicle analyses
-    configs_analyses = analyses_setup(configs)
-
-    # mission analyses
-    mission  = mission_setup(configs_analyses)
-
-    analyses = RCAIDE.Analyses.Analysis.Container()
-    analyses.configs  = configs_analyses
-    analyses.missions = mission
-
-    return configs, analyses
+    return 
 
 # ----------------------------------------------------------------------
 #   Define the Vehicle Analyses

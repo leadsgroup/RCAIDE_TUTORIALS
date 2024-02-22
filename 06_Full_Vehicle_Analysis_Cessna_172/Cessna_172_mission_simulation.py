@@ -42,6 +42,7 @@ def main():
         
     
 def vehicle_setup(): 
+    
 
     # ------------------------------------------------------------------
     #   Initialize the Vehicle
@@ -221,45 +222,49 @@ def vehicle_setup():
     landing_gear.nose                           = nose_gear
                                                 
     #add to vehicle                             
-    vehicle.landing_gear                        = landing_gear  
-    
+    vehicle.landing_gear                        = landing_gear
+
     # ########################################################  Energy Network  #########################################################  
-    net                                         = RCAIDE.Energy.Networks.Internal_Combustion_Engine()  
+    net                                         = RCAIDE.Energy.Networks.Internal_Combustion_Engine()   
+
+    # add the network to the vehicle
+    vehicle.append_energy_network(net) 
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    fuel_line                                   = RCAIDE.Energy.Networks.Distribution.Fuel_Line() 
-     
-    # fuel tank
+    fuel_line                                   = RCAIDE.Energy.Networks.Distribution.Fuel_Line()   
+
+    #------------------------------------------------------------------------------------------------------------------------------------  
+    #  Fuel Tank & Fuel
+    #------------------------------------------------------------------------------------------------------------------------------------       
     fuel_tank                                   = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.origin                            = wing.origin  
     fuel                                        = RCAIDE.Attributes.Propellants.Aviation_Gasoline() 
     fuel.mass_properties.mass                   = 319 *Units.lbs 
     fuel.mass_properties.center_of_gravity      = wing.mass_properties.center_of_gravity
     fuel.internal_volume                        = fuel.mass_properties.mass/fuel.density  
-    fuel_tank.fuel                              = fuel  
-    fuel_line.fuel_tanks.append(fuel_tank) 
+    fuel_tank.fuel                              = fuel     
+    fuel_line.fuel_tanks.append(fuel_tank)  
+    net.fuel_lines.append(fuel_line)    
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Propulsor
     #------------------------------------------------------------------------------------------------------------------------------------   
-    propulsor  = RCAIDE.Energy.Propulsion.Propulsor()     
-    
-    #------------------------------------------------------------------------------------------------------------------------------------                                                  
-    # Engine                    
-    #------------------------------------------------------------------------------------------------------------------------------------  
+    ice_prop                                   = RCAIDE.Energy.Propulsion.ICE_Propeller()     
+    ice_prop.active_fuel_tanks                 = ['fuel_tank']   
+                                                     
+    # Engine                     
     engine                                     = RCAIDE.Energy.Propulsion.Converters.Engine()
     engine.sea_level_power                     = 180. * Units.horsepower
     engine.flat_rate_altitude                  = 0.0
     engine.rated_speed                         = 2700. * Units.rpm
     engine.power_specific_fuel_consumption     = 0.52 
-    propulsor.engine                           = engine 
-
-    #------------------------------------------------------------------------------------------------------------------------------------     
-    # Prop
-    #------------------------------------------------------------------------------------------------------------------------------------ 
+    ice_prop.engine                            = engine 
+     
+    # Propeller 
     prop = RCAIDE.Energy.Propulsion.Converters.Propeller()
+    prop.tag                                = 'propeller'
     prop.number_of_blades                   = 2.0
     prop.tip_radius                         = 76./2. * Units.inches
     prop.hub_radius                         = 8.     * Units.inches
@@ -271,22 +276,21 @@ def vehicle_setup():
     prop.variable_pitch                     = True  
     ospath                                  = os.path.abspath(__file__)
     separator                               = os.path.sep
-    rel_path                                = os.path.dirname(ospath) + separator + '..'+ separator    
+    rel_path                                = os.path.dirname(ospath) + separator + '..'+ separator 
     airfoil                                 = RCAIDE.Components.Airfoils.Airfoil()
     airfoil.tag                             = 'NACA_4412' 
-    airfoil.coordinate_file                 = rel_path + 'Airfoils' + separator + 'NACA_4412.txt'   # absolute path   
-    airfoil.polar_files                     =[rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_50000.txt',
-                                              rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_100000.txt',
-                                              rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_200000.txt',
-                                              rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_500000.txt',
-                                              rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_1000000.txt']  
+    airfoil.coordinate_file                 =  rel_path + 'Airfoils' + separator + 'NACA_4412.txt'   # absolute path   
+    airfoil.polar_files                     =[ rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_50000.txt',
+                                               rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_100000.txt',
+                                               rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_200000.txt',
+                                               rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_500000.txt',
+                                               rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_1000000.txt']  
     prop.append_airfoil(airfoil)      
-    prop.airfoil_polar_stations             = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
+    prop.airfoil_polar_stations             = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]  
     prop                                    = design_propeller(prop)    
-    propulsor.rotor                         = prop 
+    ice_prop.propeller                      = prop 
     
-    fuel_line.propulsors.append(propulsor)
-    net.fuel_lines.append(fuel_line)
+    fuel_line.propulsors.append(ice_prop)
 
     #------------------------------------------------------------------------------------------------------------------------------------ 
     # Avionics
@@ -296,14 +300,10 @@ def vehicle_setup():
     avionics.mass_properties.uninstalled        = Wuav
     vehicle.avionics                            = avionics     
 
-    # add the network to the vehicle
-    vehicle.append_energy_network(net)
-    
     #------------------------------------------------------------------------------------------------------------------------------------ 
     #   Vehicle Definition Complete
     #------------------------------------------------------------------------------------------------------------------------------------ 
-
-
+ 
     
     return vehicle
   
@@ -384,6 +384,23 @@ def mission_setup(analyses):
     segment.air_speed                               = 119.   * Units.knots
     segment.distance                                = 10 * Units.nautical_mile  
     segment.state.numerics.number_control_points    = 4  
+    
+    # define flight dynamics to model 
+    segment.flight_dynamics.force_x                       = True  
+    segment.flight_dynamics.force_z                       = True     
+    
+    # define flight controls 
+    segment.flight_controls.RPM.active                    = True           
+    segment.flight_controls.RPM.assigned_propulsors       = [['ice_propeller']]
+    segment.flight_controls.RPM.initial_values            = [[2500]] 
+    segment.flight_controls.throttle.active               = True           
+    segment.flight_controls.throttle.assigned_propulsors  = [['ice_propeller']]
+    segment.flight_controls.throttle.initial_values       = [[0.5]] 
+    segment.flight_controls.body_angle                   
+    segment.flight_controls.body_angle.active             = True               
+    segment.flight_controls.body_angle.initial_values     = [[3*Units.degrees]]    
+    
+    
     mission.append_segment(segment)
 
 
