@@ -487,7 +487,7 @@ def vehicle_setup() :
     propeller_nacelle.tag            = 'propeller_nacelle'
     propeller_nacelle.length         = 1.24
     propeller_nacelle.diameter       = 0.4    
-    propeller_nacelle.origin        = [5.583,  1.300 ,    1.092]
+    propeller_nacelle.origin        = [[5.583,  1.300 ,    1.092]]
     propeller_nacelle.flow_through   = False  
     
     nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
@@ -558,7 +558,7 @@ def vehicle_setup() :
      
     propeller_nacelle_2          = deepcopy(propeller_nacelle)
     propeller_nacelle_2.tag      = 'propeller_nacelle_2' 
-    propeller_nacelle_2.origin   = [5.583, - 1.300,     1.092]
+    propeller_nacelle_2.origin   = [[5.583, - 1.300,     1.092]]
     vehicle.append_component(propeller_nacelle_2)      
     
     
@@ -686,7 +686,7 @@ def vehicle_setup() :
     # ########################################################  Energy Network  ######################################################### 
     #------------------------------------------------------------------------------------------------------------------------------------
     # define network
-    net                                                    = All_Electric()   
+    network                                                = All_Electric()   
     
     #==================================================================================================================================== 
     # Forward Bus
@@ -783,7 +783,7 @@ def vehicle_setup() :
       
     # make and append copy of forward propulsor (efficient coding)    
     cruise_propulsor_2                             = deepcopy(cruise_propulsor_1)
-    cruise_propulsor_2.tag                         = 'cruise_propulsor_1' 
+    cruise_propulsor_2.tag                         = 'cruise_propulsor_2' 
     cruise_propulsor_2.rotor.origin                = [[6.583, -1.300,  1.092 ]]  
     cruise_propulsor_2.motor.origin                = [[6.583, -1.300,  1.092 ]] 
     cruise_propulsor_2.rotor.origin                = [[6.583, -1.300,  1.092 ]]  
@@ -805,7 +805,7 @@ def vehicle_setup() :
     cruise_bus.avionics            = avionics    
 
     # append forward bus
-    net.busses.append(cruise_bus)    
+    network.busses.append(cruise_bus)    
     
         
     #==================================================================================================================================== 
@@ -980,10 +980,10 @@ def vehicle_setup() :
     lift_bus.avionics                                       = avionics    
 
    
-    net.busses.append(lift_bus)       
+    network.busses.append(lift_bus)       
         
     # append energy network 
-    vehicle.append_energy_network(net) 
+    vehicle.append_energy_network(network) 
     
     #------------------------------------------------------------------------------------------------------------------------------------
     # ##################################   Determine Vehicle Mass Properties Using Physic Based Methods  ################################ 
@@ -1115,8 +1115,7 @@ def mission_setup(analyses,vehicle):
     # define flight controls 
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['lift_propulsor_1','lift_propulsor_2','lift_propulsor_3','lift_propulsor_4',
-                                                              'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']]
-    segment.flight_controls.throttle.initial_values       = [[0.5]]
+                                                              'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']] 
        
     mission.append_segment(segment)
     
@@ -1142,9 +1141,7 @@ def mission_setup(analyses,vehicle):
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2'],
                                                              ['lift_propulsor_1','lift_propulsor_2','lift_propulsor_3','lift_propulsor_4',
-                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']                                                             ]
-    segment.flight_controls.throttle.initial_values       = [[0.5],[0.5]]    
-    mission.append_segment(segment)
+                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']]
     
     #------------------------------------------------------------------------------------------------------------------------------------  
     # High-Speed Climbing Transition 
@@ -1168,8 +1165,7 @@ def mission_setup(analyses,vehicle):
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2'],
                                                              ['lift_propulsor_1','lift_propulsor_2','lift_propulsor_3','lift_propulsor_4',
-                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']                                                             ]
-    segment.flight_controls.throttle.initial_values       = [[0.5],[0.5]]       
+                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']]
     mission.append_segment(segment) 
   
     #------------------------------------------------------------------------------------------------------------------------------------  
@@ -1190,10 +1186,8 @@ def mission_setup(analyses,vehicle):
     
     # define flight controls 
     segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']]
-    segment.flight_controls.throttle.initial_values       = [[0.5]] 
-    segment.flight_controls.body_angle.active             = True               
-    segment.flight_controls.body_angle.initial_values     = [[3*Units.degrees]]    
+    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']] 
+    segment.flight_controls.body_angle.active             = True                
                 
     mission.append_segment(segment)  
 
@@ -1215,10 +1209,8 @@ def mission_setup(analyses,vehicle):
     
     # define flight controls 
     segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']]
-    segment.flight_controls.throttle.initial_values       = [[0.5]] 
-    segment.flight_controls.body_angle.active             = True               
-    segment.flight_controls.body_angle.initial_values     = [[3*Units.degrees]]    
+    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']] 
+    segment.flight_controls.body_angle.active             = True                
                  
     mission.append_segment(segment)  
 
@@ -1238,10 +1230,8 @@ def mission_setup(analyses,vehicle):
     
     # define flight controls 
     segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']]
-    segment.flight_controls.throttle.initial_values       = [[0.5]] 
-    segment.flight_controls.body_angle.active             = True               
-    segment.flight_controls.body_angle.initial_values     = [[3*Units.degrees]]    
+    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']] 
+    segment.flight_controls.body_angle.active             = True                
          
     mission.append_segment(segment)   
     
@@ -1263,10 +1253,8 @@ def mission_setup(analyses,vehicle):
     
     # define flight controls 
     segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']]
-    segment.flight_controls.throttle.initial_values       = [[0.5]] 
-    segment.flight_controls.body_angle.active             = True               
-    segment.flight_controls.body_angle.initial_values     = [[3*Units.degrees]]    
+    segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2']] 
+    segment.flight_controls.body_angle.active             = True                
        
     mission.append_segment(segment)  
      
@@ -1292,8 +1280,7 @@ def mission_setup(analyses,vehicle):
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2'],
                                                              ['lift_propulsor_1','lift_propulsor_2','lift_propulsor_3','lift_propulsor_4',
-                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']                                                             ]
-    segment.flight_controls.throttle.initial_values       = [[0.5],[0.5]]    
+                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8'] ]
         
     mission.append_segment(segment)  
 
@@ -1318,9 +1305,7 @@ def mission_setup(analyses,vehicle):
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['cruise_propulsor_1','cruise_propulsor_2'],
                                                              ['lift_propulsor_1','lift_propulsor_2','lift_propulsor_3','lift_propulsor_4',
-                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']                                                             ]
-    segment.flight_controls.throttle.initial_values       = [[0.5],[0.5]]           
-   
+                                                            'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']] 
     mission.append_segment(segment)       
     
     #------------------------------------------------------------------------------------------------------------------------------------ 
@@ -1339,8 +1324,7 @@ def mission_setup(analyses,vehicle):
     # define flight controls 
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['lift_propulsor_1','lift_propulsor_2','lift_propulsor_3','lift_propulsor_4',
-                                                              'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']]
-    segment.flight_controls.throttle.initial_values       = [[0.5]]
+                                                              'lift_propulsor_5','lift_propulsor_6','lift_propulsor_7','lift_propulsor_8']] 
             
     mission.append_segment(segment)  
   
@@ -1391,14 +1375,12 @@ def plot_results(results):
     plot_battery_temperature(results)
     plot_battery_cell_conditions(results) 
     plot_battery_degradation(results) 
+    plot_electric_propulsor_efficiencies(results) 
     
     # Plot Propeller Conditions 
     plot_rotor_conditions(results) 
     plot_disc_and_power_loading(results)
-    
-    # Plot Electric Motor and Propeller Efficiencies 
-    plot_electric_efficiencies(results) 
-    
+     
     # Plot Battery Degradation  
     plot_battery_degradation(results)   
      
