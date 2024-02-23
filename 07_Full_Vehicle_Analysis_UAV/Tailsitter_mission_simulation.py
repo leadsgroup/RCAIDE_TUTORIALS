@@ -286,33 +286,33 @@ def mission_setup(analyses):
     base_segment = Segments.Segment()    
     base_segment.state.numerics.number_control_points  = 3
 
-    ##------------------------------------------------------------------    
-    ##  Climb Hover
-    ##------------------------------------------------------------------    
+    #------------------------------------------------------------------    
+    #  Climb Hover
+    #------------------------------------------------------------------    
     
-    #segment = RCAIDE.Analyses.Mission.Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
-    #segment.tag = "Climb" 
-    #segment.analyses.extend(analyses.base) 
-    #ones_row                                   = segment.state.ones_row 
-    #segment.initial_battery_state_of_charge    = 0.89 
-    #segment.altitude_start                     = 0.
-    #segment.altitude_end                       = 100. * Units.m
-    #segment.climb_rate                         = 3.  * Units.m / Units.s 
-    #segment.air_speed                          = 3.  * Units.m / Units.s
-    #segment.state.unknowns.body_angle          = ones_row(1) * 90. *Units.deg 
-    #segment                                    = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
-    #mission.append_segment(segment)   
+    segment = RCAIDE.Analyses.Mission.Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
+    segment.tag = "Climb" 
+    segment.analyses.extend(analyses.base) 
+    ones_row                                   = segment.state.ones_row 
+    segment.initial_battery_state_of_charge    = 0.89 
+    segment.altitude_start                     = 0.
+    segment.altitude_end                       = 100. * Units.m
+    segment.climb_rate                         = 3.  * Units.m / Units.s 
+    segment.air_speed                          = 3.  * Units.m / Units.s
+    segment.state.unknowns.body_angle          = ones_row(1) * 90. *Units.deg 
+    segment                                    = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    mission.append_segment(segment)   
     
-    ## ------------------------------------------------------------------    
-    ##   Hover
-    ## ------------------------------------------------------------------     
-    #segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
-    #segment.tag                                                  = "Hover_1" 
-    #segment.analyses.extend(analyses.base) 
-    #segment.time                                                 = 60* Units.seconds
-    #segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1) * 90.*Units.deg  
-    #segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
-    #mission.append_segment(segment)    
+    # ------------------------------------------------------------------    
+    #   Hover
+    # ------------------------------------------------------------------     
+    segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
+    segment.tag                                                  = "Hover_1" 
+    segment.analyses.extend(analyses.base) 
+    segment.time                                                 = 60* Units.seconds
+    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1) * 90.*Units.deg  
+    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    mission.append_segment(segment)    
     
     # ------------------------------------------------------------------    
     #   Hover Transition
