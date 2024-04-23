@@ -5,7 +5,7 @@
 # ----------------------------------------------------------------------        
 #   Imports
 # ----------------------------------------------------------------------      
-from RCAIDE.Analyses.Process import Process  
+from RCAIDE.Framework.Analyses.Process import Process  
 import  Missions
 
 # ----------------------------------------------------------------------        

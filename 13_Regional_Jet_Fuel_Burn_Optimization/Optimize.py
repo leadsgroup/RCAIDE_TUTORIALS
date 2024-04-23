@@ -9,7 +9,7 @@
 
 import RCAIDE
 assert RCAIDE.__version__=='1.0.0', 'These tutorials only work with the RCAIDE 1.0.0 release'
-from RCAIDE.Core import Units, Data
+from RCAIDE.Framework.Core import Units, Data
 import numpy as np
 import Vehicles
 import Analyses

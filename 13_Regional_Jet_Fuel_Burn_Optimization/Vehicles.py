@@ -10,9 +10,9 @@
 import numpy as np
 
 import RCAIDE
-from RCAIDE.Core import Units
+from RCAIDE.Framework.Core import Units
 from RCAIDE.Methods.Propulsion.turbofan_sizing import turbofan_sizing
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform import wing_planform
+from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform import wing_planform
 
 from copy import deepcopy
 
@@ -62,7 +62,7 @@ def base_setup():
     # ------------------------------------------------------------------
     #   Main Wing
     # ------------------------------------------------------------------
-    wing                         = RCAIDE.Components.Wings.Main_Wing()
+    wing                         = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag                     = 'main_wing'
     wing.areas.reference         = 92.0
     wing.aspect_ratio            = 8.4
@@ -83,7 +83,7 @@ def base_setup():
     wing.dynamic_pressure_ratio  = 1.0
     
     # control surfaces -------------------------------------------
-    flap                       = RCAIDE.Components.Wings.Control_Surfaces.Flap() 
+    flap                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Flap() 
     flap.tag                   = 'flap' 
     flap.span_fraction_start   = 0.11
     flap.span_fraction_end     = 0.85
@@ -92,7 +92,7 @@ def base_setup():
     flap.configuration_type    = 'double_slotted'
     wing.append_control_surface(flap)   
         
-    slat                       = RCAIDE.Components.Wings.Control_Surfaces.Slat()
+    slat                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Slat()
     slat.tag                   = 'slat' 
     slat.span_fraction_start   = 0.324 
     slat.span_fraction_end     = 0.963     
@@ -114,7 +114,7 @@ def base_setup():
     #  Horizontal Stabilizer
     # ------------------------------------------------------------------
 
-    wing = RCAIDE.Components.Wings.Horizontal_Tail()
+    wing = RCAIDE.Library.Components.Wings.Horizontal_Tail()
     wing.tag = 'horizontal_stabilizer'
     wing.areas.reference         = 26.0
     wing.aspect_ratio            = 5.5
@@ -139,7 +139,7 @@ def base_setup():
     #   Vertical Stabilizer
     # ------------------------------------------------------------------
 
-    wing = RCAIDE.Components.Wings.Vertical_Tail()
+    wing = RCAIDE.Library.Components.Wings.Vertical_Tail()
     wing.tag = 'vertical_stabilizer'
     wing.areas.reference         = 16.0
     wing.aspect_ratio            =  1.7
@@ -164,7 +164,7 @@ def base_setup():
     #  Fuselage
     # ------------------------------------------------------------------
 
-    fuselage = RCAIDE.Components.Fuselages.Fuselage()
+    fuselage = RCAIDE.Library.Components.Fuselages.Fuselage()
     fuselage.tag    = 'fuselage'
     fuselage.origin = [[0,0,0]]
     fuselage.number_coach_seats    = vehicle.passengers
@@ -204,7 +204,7 @@ def base_setup():
     # -----------------------------------------------------------------
     # Design the Nacelle
     # ----------------------------------------------------------------- 
-    nacelle                       = RCAIDE.Components.Nacelles.Nacelle()
+    nacelle                       = RCAIDE.Library.Components.Nacelles.Nacelle()
     nacelle.diameter              = 2.05
     nacelle.length                = 2.71
     nacelle.tag                   = 'nacelle_1'
@@ -212,7 +212,7 @@ def base_setup():
     nacelle.origin                = [[12.0,4.38,-2.1]]
     Awet                          = 1.1*np.pi*nacelle.diameter*nacelle.length # 1.1 is simple coefficient
     nacelle.areas.wetted          = Awet 
-    nacelle_airfoil               = RCAIDE.Components.Airfoils.Airfoil() 
+    nacelle_airfoil               = RCAIDE.Library.Components.Airfoils.Airfoil() 
     nacelle_airfoil.naca_4_series_airfoil = '2410'
     nacelle.append_airfoil(nacelle_airfoil) 
 
@@ -229,25 +229,25 @@ def base_setup():
     # ------------------------------------------------------------------    
 
     #initialize the gas turbine network
-    gt_engine                   = RCAIDE.Energy.Networks.Turbofan_Engine()
+    gt_engine                   = RCAIDE.Framework.Networks.Turbofan_Engine_Network()
     gt_engine.tag               = 'turbofan'
     gt_engine.origin            = [[12.0,4.38,-2.1],[12.0,-4.38,-2.1]]
     gt_engine.number_of_engines = 2.0
     gt_engine.bypass_ratio      = 5.4
 
     #add working fluid to the network
-    gt_engine.working_fluid     = RCAIDE.Attributes.Gases.Air()
+    gt_engine.working_fluid     = RCAIDE.Library.Attributes.Gases.Air()
 
 
     #Component 1 : ram,  to convert freestream static to stagnation quantities
-    ram           = RCAIDE.Energy.Propulsion.Converters.Ram()
+    ram           = RCAIDE.Library.Components.Propulsors.Converters.Ram()
     ram.tag       = 'ram'
     #add ram to the network
     gt_engine.ram = ram
 
 
     #Component 2 : inlet nozzle
-    inlet_nozzle                       = RCAIDE.Energy.Propulsion.Converters.Compression_Nozzle()
+    inlet_nozzle                       = RCAIDE.Library.Components.Propulsors.Converters.Compression_Nozzle()
     inlet_nozzle.tag                   = 'inlet nozzle'
     inlet_nozzle.polytropic_efficiency = 0.98
     inlet_nozzle.pressure_ratio        = 0.98
@@ -256,7 +256,7 @@ def base_setup():
 
 
     #Component 3 :low pressure compressor    
-    low_pressure_compressor                       = RCAIDE.Energy.Propulsion.Converters.Compressor()    
+    low_pressure_compressor                       = RCAIDE.Library.Components.Propulsors.Converters.Compressor()    
     low_pressure_compressor.tag                   = 'lpc'
     low_pressure_compressor.polytropic_efficiency = 0.91
     low_pressure_compressor.pressure_ratio        = 1.9    
@@ -264,7 +264,7 @@ def base_setup():
     gt_engine.low_pressure_compressor             = low_pressure_compressor
 
     #Component 4 :high pressure compressor  
-    high_pressure_compressor                       = RCAIDE.Energy.Propulsion.Converters.Compressor()    
+    high_pressure_compressor                       = RCAIDE.Library.Components.Propulsors.Converters.Compressor()    
     high_pressure_compressor.tag                   = 'hpc'
     high_pressure_compressor.polytropic_efficiency = 0.91
     high_pressure_compressor.pressure_ratio        = 10.0   
@@ -272,7 +272,7 @@ def base_setup():
     gt_engine.high_pressure_compressor             = high_pressure_compressor
 
     #Component 5 :low pressure turbine  
-    low_pressure_turbine                        = RCAIDE.Energy.Propulsion.Converters.Turbine()   
+    low_pressure_turbine                        = RCAIDE.Library.Components.Propulsors.Converters.Turbine()   
     low_pressure_turbine.tag                    ='lpt'
     low_pressure_turbine.mechanical_efficiency  = 0.99
     low_pressure_turbine.polytropic_efficiency  = 0.93
@@ -280,7 +280,7 @@ def base_setup():
     gt_engine.low_pressure_turbine              = low_pressure_turbine
 
     #Component 5 :high pressure turbine  
-    high_pressure_turbine                       = RCAIDE.Energy.Propulsion.Converters.Turbine()   
+    high_pressure_turbine                       = RCAIDE.Library.Components.Propulsors.Converters.Turbine()   
     high_pressure_turbine.tag                   ='hpt'
     high_pressure_turbine.mechanical_efficiency = 0.99
     high_pressure_turbine.polytropic_efficiency = 0.93
@@ -288,18 +288,18 @@ def base_setup():
     gt_engine.high_pressure_turbine             = high_pressure_turbine 
 
     #Component 6 :combustor  
-    combustor                           = RCAIDE.Energy.Propulsion.Converters.Combustor()   
+    combustor                           = RCAIDE.Library.Components.Propulsors.Converters.Combustor()   
     combustor.tag                       = 'Comb'
     combustor.efficiency                = 0.99 
     combustor.alphac                    = 1.0     
     combustor.turbine_inlet_temperature = 1500
     combustor.pressure_ratio            = 0.95
-    combustor.fuel_data                 = RCAIDE.Attributes.Propellants.Jet_A()    
+    combustor.fuel_data                 = RCAIDE.Library.Attributes.Propellants.Jet_A()    
     #add the combustor to the network    
     gt_engine.combustor                 = combustor
 
     #Component 7 :core nozzle
-    core_nozzle                       = RCAIDE.Energy.Propulsion.Converters.Expansion_Nozzle()   
+    core_nozzle                       = RCAIDE.Library.Components.Propulsors.Converters.Expansion_Nozzle()   
     core_nozzle.tag                   = 'core nozzle'
     core_nozzle.polytropic_efficiency = 0.95
     core_nozzle.pressure_ratio        = 0.99    
@@ -307,7 +307,7 @@ def base_setup():
     gt_engine.core_nozzle             = core_nozzle
 
     #Component 8 :fan nozzle
-    fan_nozzle                       = RCAIDE.Energy.Propulsion.Converters.Expansion_Nozzle()   
+    fan_nozzle                       = RCAIDE.Library.Components.Propulsors.Converters.Expansion_Nozzle()   
     fan_nozzle.tag                   = 'fan nozzle'
     fan_nozzle.polytropic_efficiency = 0.95
     fan_nozzle.pressure_ratio        = 0.99
@@ -315,7 +315,7 @@ def base_setup():
     gt_engine.fan_nozzle             = fan_nozzle
 
     #Component 9 : fan   
-    fan                       = RCAIDE.Energy.Propulsion.Converters.Fan()   
+    fan                       = RCAIDE.Library.Components.Propulsors.Converters.Fan()   
     fan.tag                   = 'fan'
     fan.polytropic_efficiency = 0.93
     fan.pressure_ratio        = 1.7  
@@ -341,7 +341,7 @@ def base_setup():
     # add  gas turbine network gt_engine to the vehicle
     vehicle.append_component(gt_engine)      
     
-    fuel                                  = RCAIDE.Components.Physical_Component()
+    fuel                                  = RCAIDE.Library.Components.Physical_Component()
     vehicle.fuel                          = fuel
     fuel.mass_properties.mass             = vehicle.mass_properties.max_takeoff-vehicle.mass_properties.max_fuel
     fuel.origin                           = vehicle.wings.main_wing.mass_properties.center_of_gravity     
@@ -363,9 +363,9 @@ def configs_setup(vehicle):
     #   Initialize Configurations
     # ------------------------------------------------------------------
 
-    configs = RCAIDE.Components.Configs.Config.Container()
+    configs = RCAIDE.Library.Components.Configs.Config.Container()
 
-    base_config = RCAIDE.Components.Configs.Config(vehicle)
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle)
     base_config.tag = 'base'
     configs.append(base_config)
 
@@ -373,7 +373,7 @@ def configs_setup(vehicle):
     #   Cruise Configuration
     # ------------------------------------------------------------------
 
-    config = RCAIDE.Components.Configs.Config(base_config)
+    config = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag = 'cruise'
 
     configs.append(config)
@@ -384,7 +384,7 @@ def configs_setup(vehicle):
     #   Cruise with Spoilers Configuration
     # ------------------------------------------------------------------
 
-    config = RCAIDE.Components.Configs.Config(base_config)
+    config = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag = 'cruise_spoilers'
 
     configs.append(config)
@@ -396,7 +396,7 @@ def configs_setup(vehicle):
     #   Takeoff Configuration
     # ------------------------------------------------------------------
 
-    config = RCAIDE.Components.Configs.Config(base_config)
+    config = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag = 'takeoff'
     config.wings['main_wing'].control_surfaces.flap.deflection  = 20. * Units.deg
     config.wings['main_wing'].control_surfaces.slat.deflection  = 25. * Units.deg
@@ -407,7 +407,7 @@ def configs_setup(vehicle):
     #   Landing Configuration
     # ------------------------------------------------------------------
 
-    config = RCAIDE.Components.Configs.Config(base_config)
+    config = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag = 'landing'
     config.wings['main_wing'].control_surfaces.flap.deflection  = 30. * Units.deg
     config.wings['main_wing'].control_surfaces.slat.deflection  = 25. * Units.deg
@@ -418,7 +418,7 @@ def configs_setup(vehicle):
     #   Short Field Takeoff Configuration
     # ------------------------------------------------------------------ 
 
-    config = RCAIDE.Components.Configs.Config(base_config)
+    config = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag = 'short_field_takeoff'    
     config.wings['main_wing'].control_surfaces.flap.deflection  = 20. * Units.deg
     config.wings['main_wing'].control_surfaces.slat.deflection  = 25. * Units.deg

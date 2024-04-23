@@ -4,12 +4,12 @@
 #   Imports
 # ----------------------------------------------------------------------
 import RCAIDE
-from RCAIDE.Core import Units
-from RCAIDE.Energy.Networks.All_Electric                      import All_Electric 
-from RCAIDE.Methods.Power.Battery.Sizing                      import initialize_from_mass 
-from RCAIDE.Methods.Weights.Correlation_Buildups.Propulsion   import nasa_motor
-from RCAIDE.Methods.Propulsion.Design                         import design_propeller ,size_optimal_motor
-from RCAIDE.Visualization  import *    
+from RCAIDE.Framework.Core import Units 
+from RCAIDE.Library.Methods.Power.Battery.Sizing                      import initialize_from_mass 
+from RCAIDE.Library.Methods.Weights.Correlation_Buildups.Propulsion   import nasa_motor 
+from RCAIDE.Library.Methods.Energy.Propulsors.Converters.Rotor        import design_propeller 
+from RCAIDE.Library.Methods.Energy.Propulsors.Converters.DC_Motor     import design_motor 
+from RCAIDE.Library.Plots  import *    
 
 import matplotlib.pyplot as plt
 from copy import deepcopy
@@ -75,7 +75,7 @@ def vehicle_setup():
     #   Main Wing
     # ------------------------------------------------------------------   
 
-    wing = RCAIDE.Components.Wings.Main_Wing()
+    wing = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
     
     wing.areas.reference         = vehicle.reference_area
@@ -98,18 +98,18 @@ def vehicle_setup():
     vehicle.append_component(wing)  
     
     # ########################################################  Energy Network  #########################################################  
-    net                              = All_Electric()   
+    net                              = RCAIDE.Framework.Networks.All_Electric_Network()   
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bus                              = RCAIDE.Energy.Networks.Distribution.Electrical_Bus()
+    bus                              = RCAIDE.Library.Components.Energy.Distribution.Electrical_Bus()
     bus.fixed_voltage                = False 
   
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Battery
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bat                          = RCAIDE.Energy.Storages.Batteries.Lithium_Ion_Generic()
+    bat                          = RCAIDE.Library.Components.Energy.Batteries.Lithium_Ion_Generic()
     bat.mass_properties.mass     = 0.17 * Units.kg
     bat.specific_energy          = 175.*Units.Wh/Units.kg
     bat.resistance               = 0.003
@@ -120,22 +120,22 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Electronic Speed Controller    
     #------------------------------------------------------------------------------------------------------------------------------------  
-    esc_1            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
+    esc_1            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
     esc_1.tag        = 'esc_1'
     esc_1.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_1)  
  
-    esc_2            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
+    esc_2            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
     esc_2.tag        = 'esc_2'
     esc_2.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_2)    
 
-    esc_3            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
+    esc_3            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
     esc_3.tag        = 'esc_3'
     esc_3.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_3)   
 
-    esc_4            = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
+    esc_4            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
     esc_4.tag        = 'esc_4'
     esc_4.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_4)   
@@ -143,7 +143,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Propeller    
     #------------------------------------------------------------------------------------------------------------------------------------           
-    propeller                                   = RCAIDE.Energy.Propulsion.Converters.Propeller()  
+    propeller                                   = RCAIDE.Library.Components.Propulsors.Converters.Propeller()  
     propeller.number_of_blades                  = 2.0
     propeller.tip_radius                        = 4.    * Units.inch
     propeller.hub_radius                        = 0.125 * Units.inch
@@ -164,7 +164,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Motor
     #------------------------------------------------------------------------------------------------------------------------------------           
-    motor                         = RCAIDE.Energy.Propulsion.Converters.Motor() 
+    motor                         = RCAIDE.Library.Components.Propulsors.Converters.DC_Motor() 
     motor.efficiency              = 0.9
     motor.nominal_voltage         = bat.pack.maximum_voltage 
     motor.origin                  = propeller.origin 
@@ -175,7 +175,7 @@ def vehicle_setup():
     motor.rotor_radius            = propeller.tip_radius
     motor.design_torque           = propeller.cruise.design_torque
     motor.angular_velocity        = propeller.cruise.design_angular_velocity/motor.gear_ratio  
-    motor                         = size_optimal_motor(motor)
+    motor                         = design_motor(motor)
     motor.mass_properties.mass    = nasa_motor(motor.design_torque)    
     
 
@@ -189,13 +189,13 @@ def vehicle_setup():
     net.busses.append(bus)        
     
     # Component 4 the Payload
-    payload = RCAIDE.Energy.Peripherals.Payload()
+    payload = RCAIDE.Library.Components.Payloads.Payload()
     payload.power_draw           = 0. #Watts 
     payload.mass_properties.mass = 0.0 * Units.kg
     net.payload                  = payload
     
     # Component 5 the Avionics
-    avionics                     = RCAIDE.Energy.Peripherals.Avionics()
+    avionics                     = RCAIDE.Library.Components.Systems.Avionics()
     avionics.power_draw          = 2. #Watts  
     net.avionics                 = avionics      
  
@@ -213,8 +213,8 @@ def configs_setup(vehicle):
     # ------------------------------------------------------------------
     #   Initialize Configurations
     # ------------------------------------------------------------------ 
-    configs = RCAIDE.Components.Configs.Config.Container() 
-    base_config = RCAIDE.Components.Configs.Config(vehicle)
+    configs = RCAIDE.Library.Components.Configs.Config.Container() 
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle)
     base_config.tag = 'base'
     configs.append(base_config)
     
@@ -227,18 +227,18 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #   Initialize the Analyses
     # ------------------------------------------------------------------     
-    analyses = RCAIDE.Analyses.Vehicle() 
+    analyses = RCAIDE.Framework.Analyses.Vehicle() 
     
     # ------------------------------------------------------------------
     #  Weights
-    weights = RCAIDE.Analyses.Weights.Weights()
-    weights.settings.empty_weight_method =  RCAIDE.Methods.Weights.Correlation_Buildups.UAV.empty
+    weights = RCAIDE.Framework.Analyses.Weights.Weights()
+    weights.settings.empty_weight_method =  RCAIDE.Library.Methods.Weights.Correlation_Buildups.UAV.empty
     weights.vehicle = vehicle
     analyses.append(weights)
     
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     aerodynamics.settings.maximum_lift_coefficient   = 1.5
@@ -246,18 +246,18 @@ def base_analysis(vehicle):
     
     # ------------------------------------------------------------------
     #  Energy
-    energy = RCAIDE.Analyses.Energy.Energy()
+    energy = RCAIDE.Framework.Analyses.Energy.Energy()
     energy.networks = vehicle.networks
     analyses.append(energy)
     
     # ------------------------------------------------------------------
     #  Planet Analysis
-    planet = RCAIDE.Analyses.Planets.Planet()
+    planet = RCAIDE.Framework.Analyses.Planets.Planet()
     analyses.append(planet)
     
     # ------------------------------------------------------------------
     #  Atmosphere Analysis
-    atmosphere = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    atmosphere = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
     atmosphere.features.planet = planet.features
     analyses.append(atmosphere)   
     
@@ -273,14 +273,14 @@ def mission_setup(analyses):
     #   Initialize the Mission
     # ------------------------------------------------------------------
 
-    mission = RCAIDE.Analyses.Mission.Sequential_Segments()
+    mission = RCAIDE.Framework.Mission.Sequential_Segments()
     mission.tag = 'The Test Mission'
 
-    mission.atmosphere  = RCAIDE.Attributes.Atmospheres.Earth.US_Standard_1976()
-    mission.planet      = RCAIDE.Attributes.Planets.Earth()
+    mission.atmosphere  = RCAIDE.Library.Attributes.Atmospheres.Earth.US_Standard_1976()
+    mission.planet      = RCAIDE.Library.Attributes.Planets.Earth()
     
     # unpack Segments module
-    Segments = RCAIDE.Analyses.Mission.Segments
+    Segments = RCAIDE.Framework.Mission.Segments
     
     # base segment
     base_segment = Segments.Segment()    
@@ -290,7 +290,7 @@ def mission_setup(analyses):
     #  Climb Hover
     #------------------------------------------------------------------    
     
-    segment = RCAIDE.Analyses.Mission.Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
+    segment = RCAIDE.Framework.Mission.Segments.Climb.Constant_Speed_Constant_Rate(base_segment)
     segment.tag = "Climb" 
     segment.analyses.extend(analyses.base) 
     ones_row                                   = segment.state.ones_row 
@@ -306,7 +306,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------    
     #   Hover
     # ------------------------------------------------------------------     
-    segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
+    segment                                                      = RCAIDE.Framework.Mission.Segments.Vertical_Flight.Hover(base_segment)
     segment.tag                                                  = "Hover_1" 
     segment.analyses.extend(analyses.base) 
     segment.time                                                 = 60* Units.seconds
@@ -317,7 +317,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------    
     #   Hover Transition
     # ------------------------------------------------------------------   
-    segment                   = RCAIDE.Analyses.Mission.Segments.Cruise.Constant_Acceleration_Constant_Altitude(base_segment)
+    segment                   = RCAIDE.Framework.Mission.Segments.Cruise.Constant_Acceleration_Constant_Altitude(base_segment)
     segment.tag               = "Transition_to_Cruise" 
     segment.analyses.extend(analyses.base) 
     segment.initial_battery_state_of_charge    = 0.89 
@@ -331,7 +331,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------    
     #   Cruise
     # ------------------------------------------------------------------      
-    segment                                 = RCAIDE.Analyses.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(base_segment)
+    segment                                 = RCAIDE.Framework.Mission.Segments.Cruise.Constant_Speed_Constant_Altitude(base_segment)
     segment.tag                             = "Cruise" 
     segment.analyses.extend(analyses.base) 
     segment.distance                        = 3.  * Units.km
@@ -345,7 +345,7 @@ def mission_setup(analyses):
     #   Hover Transition
     # ------------------------------------------------------------------     
     
-    segment                                 = RCAIDE.Analyses.Mission.Segments.Cruise.Constant_Acceleration_Constant_Altitude(base_segment)
+    segment                                 = RCAIDE.Framework.Mission.Segments.Cruise.Constant_Acceleration_Constant_Altitude(base_segment)
     segment.tag                             = "Transition_to_hover" 
     segment.analyses.extend(analyses.base) 
     segment.acceleration                    = -0.5 * Units['m/s/s'] 
@@ -358,7 +358,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------    
     #   Hover
     # ------------------------------------------------------------------     
-    segment                                                      = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Hover(base_segment)
+    segment                                                      = RCAIDE.Framework.Mission.Segments.Vertical_Flight.Hover(base_segment)
     segment.tag                                                  = "Hover_2" 
     segment.analyses.extend(analyses.base)                      
     segment.time                                                 = 60* Units.seconds
@@ -370,7 +370,7 @@ def mission_setup(analyses):
     # ------------------------------------------------------------------    
     #   Descent Hover
     # ------------------------------------------------------------------      
-    segment              = RCAIDE.Analyses.Mission.Segments.Vertical_Flight.Descent(base_segment)
+    segment              = RCAIDE.Framework.Mission.Segments.Vertical_Flight.Descent(base_segment)
     segment.tag          = "Descent" 
     segment.analyses.extend(analyses.base) 
     segment.altitude_end = 0. * Units.m
@@ -388,7 +388,7 @@ def mission_setup(analyses):
 
 def analyses_setup(configs):
 
-    analyses = RCAIDE.Analyses.Analysis.Container()
+    analyses = RCAIDE.Framework.Analyses.Analysis.Container()
 
     # build a base analysis for each config
     for tag,config in configs.items():
@@ -399,7 +399,7 @@ def analyses_setup(configs):
 
 def missions_setup(mission): 
 
-    missions         = RCAIDE.Analyses.Mission.Missions()
+    missions         = RCAIDE.Framework.Mission.Missions()
 
     # base mission 
     mission.tag  = 'base_mission'

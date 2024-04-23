@@ -8,10 +8,10 @@
 # RCAIDE imports 
 import RCAIDE 
 import RCAIDE
-from RCAIDE.Core                                           import Units , Data    
+from RCAIDE.Framework.Core                                           import Units , Data    
 from RCAIDE.Methods.Energy.Propulsion.Converters.Turbojet  import design_turbojet
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform      import wing_segmented_planform
-from RCAIDE.Visualization                 import *     
+from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import wing_segmented_planform
+from RCAIDE.Library.Plots                 import *     
 
 # python imports 
 import numpy as np  
@@ -58,7 +58,7 @@ def main():
 
 def analyses_setup(configs):
 
-    analyses = RCAIDE.Analyses.Analysis.Container()
+    analyses = RCAIDE.Framework.Analyses.Analysis.Container()
 
     # build a base analysis for each config
     for tag,config in configs.items():
@@ -72,17 +72,17 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #   Initialize the Analyses
     # ------------------------------------------------------------------     
-    analyses = RCAIDE.Analyses.Vehicle()
+    analyses = RCAIDE.Framework.Analyses.Vehicle()
  
     # ------------------------------------------------------------------
     #  Weights
-    weights = RCAIDE.Analyses.Weights.Weights_Transport()
+    weights = RCAIDE.Framework.Analyses.Weights.Weights_Transport()
     weights.vehicle = vehicle
     analyses.append(weights)
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Analyses.Aerodynamics.Supersonic_VLM()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Supersonic_VLM()
     aerodynamics.geometry = vehicle    
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     aerodynamics.settings.span_efficiency            = .8
@@ -96,18 +96,18 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Energy
-    energy= RCAIDE.Analyses.Energy.Energy()
+    energy= RCAIDE.Framework.Analyses.Energy.Energy()
     energy.networks = vehicle.networks #what is called throughout the mission (at every time step))
     analyses.append(energy)
 
     # ------------------------------------------------------------------
     #  Planet Analysis
-    planet = RCAIDE.Analyses.Planets.Planet()
+    planet = RCAIDE.Framework.Analyses.Planets.Planet()
     analyses.append(planet)
 
     # ------------------------------------------------------------------
     #  Atmosphere Analysis
-    atmosphere = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    atmosphere = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
     atmosphere.features.planet = planet.features
     analyses.append(atmosphere)   
 
@@ -156,7 +156,7 @@ def vehicle_setup():
     #   Main Wing
     # ------------------------------------------------------------------        
     
-    wing = RCAIDE.Components.Wings.Main_Wing()
+    wing = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
     
     wing.aspect_ratio            = 1.83
@@ -190,7 +190,7 @@ def vehicle_setup():
     wing.high_mach                 = True 
     wing.dynamic_pressure_ratio    = 1.0
      
-    wing_airfoil                   = RCAIDE.Components.Airfoils.Airfoil()  
+    wing_airfoil                   = RCAIDE.Library.Components.Airfoils.Airfoil()  
     ospath                         = os.path.abspath(__file__)
     separator                      = os.path.sep
     rel_path                       = os.path.dirname(ospath) + separator + '..' + separator 
@@ -198,7 +198,7 @@ def vehicle_setup():
     wing.append_airfoil(wing_airfoil)  
     
     # set root sweep with inner section
-    segment = RCAIDE.Components.Wings.Segment()
+    segment = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                   = 'section_1'
     segment.percent_span_location = 0.
     segment.twist                 = 0. * Units.deg
@@ -210,7 +210,7 @@ def vehicle_setup():
     wing.Segments.append(segment)
     
     # set section 2 start point
-    segment = RCAIDE.Components.Wings.Segment()
+    segment = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                   = 'section_2'
     segment.percent_span_location = 6.15/(25.6/2) + wing.Segments['section_1'].percent_span_location
     segment.twist                 = 0. * Units.deg
@@ -223,7 +223,7 @@ def vehicle_setup():
     
     
     # set section 3 start point
-    segment = RCAIDE.Components.Wings.Segment() 
+    segment = RCAIDE.Library.Components.Wings.Segment() 
     segment.tag                   = 'section_3'
     segment.percent_span_location = 5.95/(25.6/2) + wing.Segments['section_2'].percent_span_location
     segment.twist                 = 0. * Units.deg
@@ -235,7 +235,7 @@ def vehicle_setup():
     wing.Segments.append(segment)  
     
     # set tip
-    segment = RCAIDE.Components.Wings.Segment() 
+    segment = RCAIDE.Library.Components.Wings.Segment() 
     segment.tag                   = 'tip'
     segment.percent_span_location = 1.
     segment.twist                 = 0. * Units.deg
@@ -258,7 +258,7 @@ def vehicle_setup():
     #   Vertical Stabilizer
     # ------------------------------------------------------------------
     
-    wing = RCAIDE.Components.Wings.Vertical_Tail()
+    wing = RCAIDE.Library.Components.Wings.Vertical_Tail()
     wing.tag = 'vertical_stabilizer'    
     
     wing.aspect_ratio            = 0.74     
@@ -285,13 +285,13 @@ def vehicle_setup():
     
     wing.dynamic_pressure_ratio  = 1.0
     
-    tail_airfoil = RCAIDE.Components.Airfoils.Airfoil() 
+    tail_airfoil = RCAIDE.Library.Components.Airfoils.Airfoil() 
     tail_airfoil.coordinate_file = rel_path + 'Airfoils' + separator + 'supersonic_tail.txt' 
     
     wing.append_airfoil(tail_airfoil)  
 
     # set root sweep with inner section
-    segment = RCAIDE.Components.Wings.Segment()
+    segment = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                   = 'section_1'
     segment.percent_span_location = 0.0
     segment.twist                 = 0. * Units.deg
@@ -303,7 +303,7 @@ def vehicle_setup():
     wing.Segments.append(segment)
     
     # set mid section start point
-    segment = RCAIDE.Components.Wings.Segment()
+    segment = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                   = 'section_2'
     segment.percent_span_location = 2.4/(6.0) + wing.Segments['section_1'].percent_span_location
     segment.twist                 = 0. * Units.deg
@@ -315,7 +315,7 @@ def vehicle_setup():
     wing.Segments.append(segment)
     
     # set tip
-    segment = RCAIDE.Components.Wings.Segment()
+    segment = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                   = 'tip'
     segment.percent_span_location = 1.
     segment.twist                 = 0. * Units.deg
@@ -337,7 +337,7 @@ def vehicle_setup():
     #  Fuselage
     # ------------------------------------------------------------------
     
-    fuselage                                        = RCAIDE.Components.Fuselages.Fuselage()
+    fuselage                                        = RCAIDE.Library.Components.Fuselages.Fuselage()
     fuselage.tag                                    = 'fuselage' 
     fuselage.seats_abreast                          = 4
     fuselage.seat_pitch                             = 38. * Units.inches 
@@ -380,7 +380,7 @@ def vehicle_setup():
     # ------------------------------------------------------------------        
     # the nacelle 
     # ------------------------------------------------------------------    
-    nacelle                  = RCAIDE.Components.Nacelles.Nacelle()
+    nacelle                  = RCAIDE.Library.Components.Nacelles.Nacelle()
     nacelle.diameter         = 1.3
     nacelle.tag              = 'nacelle_1'
     nacelle.origin           = [[36.56, 22, -1.9]] 
@@ -409,12 +409,12 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Turbofan Network
     #------------------------------------------------------------------------------------------------------------------------------------  
-    net                                            = RCAIDE.Energy.Networks.Turbojet_Engine() 
+    net                                            = RCAIDE.Framework.Networks.Turbojet_Engine() 
     
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Fuel Distrubition Line 
     #------------------------------------------------------------------------------------------------------------------------------------  
-    fuel_line                                     = RCAIDE.Energy.Networks.Distribution.Fuel_Line() 
+    fuel_line                                     = RCAIDE.Library.Components.Energy.Distribution.Fuel_Line() 
     fuel_line.identical_propulsors                = False # only for regression 
     
 
@@ -432,15 +432,15 @@ def vehicle_setup():
     outer_right_turbojet.design_mach_number           = 2.02
     outer_right_turbojet.design_thrust                = 40000. * Units.lbf  
     outer_right_turbojet.origin                       = [[37.,6.,-1.3]] 
-    outer_right_turbojet.working_fluid                = RCAIDE.Attributes.Gases.Air()
+    outer_right_turbojet.working_fluid                = RCAIDE.Library.Attributes.Gases.Air()
     
     # Ram  
-    ram     = RCAIDE.Energy.Propulsion.Converters.Ram()
+    ram     = RCAIDE.Library.Components.Propulsors.Converters.Ram()
     ram.tag = 'ram' 
     outer_right_turbojet.append(ram) 
  
     # Inlet Nozzle 
-    inlet_nozzle                          = RCAIDE.Energy.Propulsion.Converters.Compression_Nozzle()
+    inlet_nozzle                          = RCAIDE.Library.Components.Propulsors.Converters.Compression_Nozzle()
     inlet_nozzle.tag                      = 'inlet_nozzle' 
     inlet_nozzle.polytropic_efficiency    = 1.0
     inlet_nozzle.pressure_ratio           = 1.0
@@ -448,55 +448,55 @@ def vehicle_setup():
     outer_right_turbojet.append(inlet_nozzle)     
           
     #  Low Pressure Compressor      
-    compressor                            = RCAIDE.Energy.Propulsion.Converters.Compressor()    
+    compressor                            = RCAIDE.Library.Components.Propulsors.Converters.Compressor()    
     compressor.tag                        = 'low_pressure_compressor' 
     compressor.polytropic_efficiency      = 0.88
     compressor.pressure_ratio             = 3.1     
     outer_right_turbojet.append(compressor)       
         
     # High Pressure Compressor        
-    compressor                            = RCAIDE.Energy.Propulsion.Converters.Compressor()    
+    compressor                            = RCAIDE.Library.Components.Propulsors.Converters.Compressor()    
     compressor.tag                        = 'high_pressure_compressor' 
     compressor.polytropic_efficiency      = 0.88
     compressor.pressure_ratio             = 5.0  
     outer_right_turbojet.append(compressor)
  
     # Low Pressure Turbine 
-    turbine                               = RCAIDE.Energy.Propulsion.Converters.Turbine()   
+    turbine                               = RCAIDE.Library.Components.Propulsors.Converters.Turbine()   
     turbine.tag                           ='low_pressure_turbine' 
     turbine.mechanical_efficiency         = 0.99
     turbine.polytropic_efficiency         = 0.89 
     outer_right_turbojet.append(turbine)        
              
     # High Pressure Turbine         
-    turbine                               = RCAIDE.Energy.Propulsion.Converters.Turbine()   
+    turbine                               = RCAIDE.Library.Components.Propulsors.Converters.Turbine()   
     turbine.tag                           ='high_pressure_turbine' 
     turbine.mechanical_efficiency         = 0.99
     turbine.polytropic_efficiency         = 0.87 
     outer_right_turbojet.append(turbine)  
           
     # Combustor   
-    combustor                             = RCAIDE.Energy.Propulsion.Converters.Combustor()   
+    combustor                             = RCAIDE.Library.Components.Propulsors.Converters.Combustor()   
     combustor.tag                         = 'combustor' 
     combustor.efficiency                  = 0.94
     combustor.alphac                      = 1.0     
     combustor.turbine_inlet_temperature   = 1440.
     combustor.pressure_ratio              = 0.92
-    combustor.fuel_data                   = RCAIDE.Attributes.Propellants.Jet_A()     
+    combustor.fuel_data                   = RCAIDE.Library.Attributes.Propellants.Jet_A()     
     outer_right_turbojet.append(combustor)
      
     #  Afterburner  
-    afterburner                           = RCAIDE.Energy.Propulsion.Converters.Combustor()   
+    afterburner                           = RCAIDE.Library.Components.Propulsors.Converters.Combustor()   
     afterburner.tag                       = 'afterburner' 
     afterburner.efficiency                = 0.9
     afterburner.alphac                    = 1.0     
     afterburner.turbine_inlet_temperature = 1500
     afterburner.pressure_ratio            = 1.0
-    afterburner.fuel_data                 = RCAIDE.Attributes.Propellants.Jet_A()     
+    afterburner.fuel_data                 = RCAIDE.Library.Attributes.Propellants.Jet_A()     
     outer_right_turbojet.append(afterburner)    
  
     # Core Nozzle 
-    nozzle                                = RCAIDE.Energy.Propulsion.Converters.Supersonic_Nozzle()   
+    nozzle                                = RCAIDE.Library.Components.Propulsors.Converters.Supersonic_Nozzle()   
     nozzle.tag                            = 'core_nozzle' 
     nozzle.pressure_recovery              = 0.95
     nozzle.pressure_ratio                 = 1.    
@@ -539,68 +539,68 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Fuel Tank & Fuel
     #------------------------------------------------------------------------------------------------------------------------------------   
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_9'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[26.5,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 11096
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_10'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[28.7,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 11943
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_1_and_4'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[31.0,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 4198+4198
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_5_and_8'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[32.9,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 7200+12838
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_6_and_7'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[37.4,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 11587+7405
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_5A_and_7A'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[40.2,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 2225+2225
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_2_and_3'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[40.2,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 4570+4570
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank)  
  
-    fuel_tank = RCAIDE.Energy.Sources.Fuel_Tanks.Fuel_Tank()
+    fuel_tank = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_11'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[49.8,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 10415
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel_type                            = RCAIDE.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel_type                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank)      
     
      # Append fuel line to network      
@@ -624,22 +624,22 @@ def configs_setup(vehicle):
     # ------------------------------------------------------------------
     #   Initialize Configurations
     # ------------------------------------------------------------------ 
-    configs         = RCAIDE.Components.Configs.Config.Container() 
-    base_config     = RCAIDE.Components.Configs.Config(vehicle)
+    configs         = RCAIDE.Library.Components.Configs.Config.Container() 
+    base_config     = RCAIDE.Library.Components.Configs.Config(vehicle)
     base_config.tag = 'base'
     configs.append(base_config)
     
     # ------------------------------------------------------------------
     #   Cruise Configuration
     # ------------------------------------------------------------------ 
-    config     = RCAIDE.Components.Configs.Config(base_config)
+    config     = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag = 'cruise' 
     configs.append(config)
     
     # ------------------------------------------------------------------
     #   Afterburner Climb Configuration
     # ------------------------------------------------------------------ 
-    config                                      = RCAIDE.Components.Configs.Config(base_config)
+    config                                      = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag                                  = 'climb' 
     for propulsor in config.networks.turbojet_engine.fuel_lines.fuel_line.propulsors:
         propulsor.afterburner_active = True 
@@ -649,7 +649,7 @@ def configs_setup(vehicle):
     # ------------------------------------------------------------------
     #   Takeoff Configuration
     # ------------------------------------------------------------------  
-    config                                      = RCAIDE.Components.Configs.Config(base_config)
+    config                                      = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag                                  = 'takeoff' 
     config.V2_VS_ratio                          = 1.21
     config.maximum_lift_coefficient             = 2.  
@@ -661,7 +661,7 @@ def configs_setup(vehicle):
     #   Landing Configuration
     # ------------------------------------------------------------------
 
-    config                                = RCAIDE.Components.Configs.Config(base_config)
+    config                                = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag                            = 'landing' 
     config.wings['main_wing'].flaps_angle = 0. * Units.deg
     config.wings['main_wing'].slats_angle = 0. * Units.deg 
@@ -711,11 +711,11 @@ def mission_setup(analyses):
     #   Initialize the Mission
     # ------------------------------------------------------------------
     
-    mission = RCAIDE.Analyses.Mission.Sequential_Segments()
+    mission = RCAIDE.Framework.Mission.Sequential_Segments()
     mission.tag = 'the_mission'
      
     # unpack Segments module
-    Segments = RCAIDE.Analyses.Mission.Segments 
+    Segments = RCAIDE.Framework.Mission.Segments 
     base_segment = Segments.Segment()
     
     # ------------------------------------------------------------------
@@ -1035,7 +1035,7 @@ def mission_setup(analyses):
 def missions_setup(mission):
     """This allows multiple missions to be incorporated if desired, but only one is used here."""
 
-    missions     = RCAIDE.Analyses.Mission.Missions() 
+    missions     = RCAIDE.Framework.Mission.Missions() 
     mission.tag  = 'base_mission'
     missions.append(mission)
 

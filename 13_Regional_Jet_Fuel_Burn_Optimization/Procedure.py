@@ -10,14 +10,14 @@
 import numpy as np
 
 import RCAIDE
-from RCAIDE.Core import Units, Data
-from RCAIDE.Analyses.Process import Process
+from RCAIDE.Framework.Core import Units, Data
+from RCAIDE.Framework.Analyses.Process import Process
 from RCAIDE.Methods.Propulsion.turbofan_sizing import turbofan_sizing
 from RCAIDE.Methods.Geometry.Two_Dimensional.Cross_Section.Propulsion.compute_turbofan_geometry import compute_turbofan_geometry
 #from RCAIDE.Methods.Center_of_Gravity.compute_component_centers_of_gravity import compute_component_centers_of_gravity
 #from RCAIDE.Methods.Center_of_Gravity.compute_aircraft_center_of_gravity import compute_aircraft_center_of_gravity
-from RCAIDE.Methods.Aerodynamics.Subsonic_VLM.Lift.compute_max_lift_coeff import compute_max_lift_coeff
-from RCAIDE.Optimization.write_optimization_outputs import write_optimization_outputs
+from RCAIDE.Library.Methods.Aerodynamics.Subsonic_VLM.Lift.compute_max_lift_coeff import compute_max_lift_coeff
+from RCAIDE.Framework.Optimization.write_optimization_outputs import write_optimization_outputs
 
 # ----------------------------------------------------------------------        
 #   Setup
@@ -103,7 +103,7 @@ def simple_sizing(nexus):
     #find conditions
     air_speed   = nexus.missions.base.segments['cruise'].air_speed 
     altitude    = nexus.missions.base.segments['climb_5'].altitude_end
-    atmosphere  = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    atmosphere  = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
     
     freestream  = atmosphere.compute_values(altitude)
     freestream0 = atmosphere.compute_values(6000.*Units.ft)  #cabin altitude
@@ -120,7 +120,7 @@ def simple_sizing(nexus):
     freestream.mach_number = mach_number
     freestream.gravity     = 9.81
     
-    conditions             = RCAIDE.Analyses.Mission.Common.Results()   #assign conditions in form for propulsor sizing
+    conditions             = RCAIDE.Framework.Mission.Common.Results()   #assign conditions in form for propulsor sizing
     conditions.freestream  = freestream
     
     for config in configs:
@@ -128,7 +128,7 @@ def simple_sizing(nexus):
             
         for wing in config.wings:
             
-            wing = RCAIDE.Methods.Geometry.Two_Dimensional.Planform.wing_planform(wing)
+            wing = RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform.wing_planform(wing)
             wing.areas.exposed  = 0.8 * wing.areas.wetted
             wing.areas.affected = 0.6 * wing.areas.reference
             

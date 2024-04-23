@@ -8,9 +8,9 @@ The script below documents how to set up and plot the results of an isolaed/stat
 # ----------------------------------------------------------------------
 
 import RCAIDE
-from RCAIDE.Core import Units, Data 
-from RCAIDE.Visualization  import *    
-from RCAIDE.Methods.Energy.Propulsion.Converters.Rotor import design_propeller 
+from RCAIDE.Framework.Core import Units, Data 
+from RCAIDE.Library.Plots  import *    
+from RCAIDE.Library.Methods.Energy.Propulsors.Converters.Rotor import design_propeller 
 
 import os
 import numpy as np 
@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 # ---------------------------------------------------------------------- 
 def main(): 
  
-    prop                                     = RCAIDE.Energy.Propulsion.Converters.Propeller() 
+    prop                                     = RCAIDE.Library.Components.Propulsors.Converters.Propeller() 
     prop.number_of_blades                    = 3
     prop.number_of_engines                   = 1
     prop.tip_radius                          = 1.0668
@@ -37,7 +37,7 @@ def main():
     ospath                                     = os.path.abspath(__file__)
     separator                                  = os.path.sep
     rel_path                                   = os.path.dirname(ospath) + separator + '..'+ separator    
-    airfoil_1                                  = RCAIDE.Components.Airfoils.Airfoil()
+    airfoil_1                                  = RCAIDE.Library.Components.Airfoils.Airfoil()
     airfoil_1.tag                              = 'NACA_4412' 
     airfoil_1.coordinate_file                  = rel_path + 'Airfoils' + separator + 'NACA_4412.txt'   # absolute path   
     airfoil_1.polar_files                      =[rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_50000.txt',
@@ -48,7 +48,7 @@ def main():
     prop.append_airfoil(airfoil_1)           # append first airfoil 
 
     # define  second airfoil 
-    airfoil_2                                = RCAIDE.Components.Airfoils.Airfoil()  
+    airfoil_2                                = RCAIDE.Library.Components.Airfoils.Airfoil()  
     airfoil_2.tag                            = 'Clark_Y' 
     airfoil_2.coordinate_file                =   rel_path + 'Airfoils' + separator + 'Clark_y.txt' 
     airfoil_2.polar_files                    = [ rel_path + 'Airfoils' + separator + 'Polars' + separator + 'Clark_y_polar_Re_50000.txt',
@@ -66,9 +66,9 @@ def main():
     plot_3d_rotor(prop) 
 
     # Find the operating conditions
-    atmosphere                                          = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    atmosphere                                          = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
     atmosphere_conditions                               = atmosphere.compute_values(prop.cruise.design_altitude)  
-    conditions                                          = RCAIDE.Analyses.Mission.Common.Results()
+    conditions                                          = RCAIDE.Framework.Mission.Common.Results()
     conditions._size                                    = 1
     conditions.freestream                               = Data()
     conditions.propulsion                               = Data()

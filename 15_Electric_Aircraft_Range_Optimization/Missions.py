@@ -6,8 +6,8 @@
 #   Imports
 # ----------------------------------------------------------------------  
 import RCAIDE
-from RCAIDE.Core import Units     
-from RCAIDE.Methods.Performance.estimate_stall_speed   import estimate_stall_speed 
+from RCAIDE.Framework.Core import Units     
+from RCAIDE.Library.Methods.Performance.estimate_stall_speed   import estimate_stall_speed 
  
 
 # ----------------------------------------------------------------------
@@ -17,7 +17,7 @@ from RCAIDE.Methods.Performance.estimate_stall_speed   import estimate_stall_spe
 def setup(analyses):
     
     # the mission container
-    missions = RCAIDE.Analyses.Mission.Mission.Container()
+    missions = RCAIDE.Framework.Mission.Mission.Container()
 
     # ------------------------------------------------------------------
     #   Base Mission
@@ -37,22 +37,22 @@ def mission_setup(analyses):
     #   Initialize the Mission
     # ------------------------------------------------------------------
 
-    mission     = RCAIDE.Analyses.Mission.Sequential_Segments()
+    mission     = RCAIDE.Framework.Mission.Sequential_Segments()
     mission.tag = 'baseline_mission'
 
     # airport  
-    airport            = RCAIDE.Attributes.Airports.Airport()   
+    airport            = RCAIDE.Library.Attributes.Airports.Airport()   
     airport.altitude   = 0.0  * Units.ft
     airport.delta_isa  = 0.0
-    airport.atmosphere = RCAIDE.Attributes.Atmospheres.Earth.US_Standard_1976() 
+    airport.atmosphere = RCAIDE.Library.Attributes.Atmospheres.Earth.US_Standard_1976() 
     mission.airport    = airport      
 
-    atmosphere         = RCAIDE.Analyses.Atmospheric.US_Standard_1976() 
+    atmosphere         = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976() 
     atmo_data          = atmosphere.compute_values(altitude = airport.altitude,temperature_deviation= 1.)     
     mission.airport    = airport       
 
     # unpack Segments module
-    Segments = RCAIDE.Analyses.Mission.Segments
+    Segments = RCAIDE.Framework.Mission.Segments
 
     # base segment           
     base_segment                                             = Segments.Segment() 

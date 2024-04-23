@@ -5,28 +5,26 @@
 # ----------------------------------------------------------------------    
 
 import RCAIDE
-from RCAIDE.Core import Units 
+from RCAIDE.Framework.Core import Units 
 import numpy as np
 
-# ----------------------------------------------------------------------
 #   Define the Mission
-# ----------------------------------------------------------------------
 def stick_fixed_stability_setup(analyses,vehicle): 
-    missions                     = RCAIDE.Analyses.Mission.Mission.Container()  
+    missions                     = RCAIDE.Framework.Mission.Mission.Container()  
     max_speed_multiplier         = 1.0 # this multiplier is used to compute V_max from V_nominal
     missions.stick_fixed_cruise  = base_mission_setup(vehicle,max_speed_multiplier) 
  
     return missions   
 
 def elevator_sizing_setup(analyses,vehicle): 
-    missions = RCAIDE.Analyses.Mission.Mission.Container() 
+    missions = RCAIDE.Framework.Mission.Mission.Container() 
     max_speed_multiplier      = 1.4 # this multiplier is used to compute V_max from V_nominal
     missions.elevator_sizing  = base_mission_setup(vehicle,max_speed_multiplier)   
  
     return missions   
 
 def aileron_rudder_sizing_setup(analyses,vehicle): 
-    missions = RCAIDE.Analyses.Mission.Mission.Container() 
+    missions = RCAIDE.Framework.Mission.Mission.Container() 
     max_speed_multiplier      = 1.0     
     missions.aileron_sizing   = base_mission_setup(vehicle,max_speed_multiplier)  
     max_speed_multiplier      = 1.4   # this multiplier is used to compute V_max from V_nominal   
@@ -35,7 +33,7 @@ def aileron_rudder_sizing_setup(analyses,vehicle):
     return missions   
     
 def flap_sizing_setup(analyses,vehicle): 
-    missions = RCAIDE.Analyses.Mission.Mission.Container() 
+    missions = RCAIDE.Framework.Mission.Mission.Container() 
     max_speed_multiplier     = 1.0      
     missions.flap_sizing     = base_mission_setup(vehicle,max_speed_multiplier)   
     return missions        
@@ -50,19 +48,19 @@ def base_mission_setup(vehicle,max_speed_multiplier):
     This sets up the nominal cruise of the aircraft
     '''
      
-    mission = RCAIDE.Analyses.Mission.Sequential_Segments()
+    mission = RCAIDE.Framework.Mission.Sequential_Segments()
     mission.tag = 'mission'
 
     # airport
-    airport = RCAIDE.Attributes.Airports.Airport()
+    airport = RCAIDE.Library.Attributes.Airports.Airport()
     airport.altitude   =  0. * Units.ft
     airport.delta_isa  =  0.0
-    airport.atmosphere = RCAIDE.Attributes.Atmospheres.Earth.US_Standard_1976()
+    airport.atmosphere = RCAIDE.Library.Attributes.Atmospheres.Earth.US_Standard_1976()
 
     mission.airport = airport    
  
     # unpack Segments module
-    Segments = RCAIDE.Analyses.Mission.Segments
+    Segments = RCAIDE.Framework.Mission.Segments
 
     # base segment
     base_segment = Segments.Segment()

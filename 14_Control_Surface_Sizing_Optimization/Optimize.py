@@ -4,7 +4,7 @@
 #   Imports
 # ----------------------------------------------------------------------  
 import RCAIDE
-from RCAIDE.Core import Units, Data 
+from RCAIDE.Framework.Core import Units, Data 
 import numpy as np
 import Vehicles
 import Missions
