@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------    
 
 import RCAIDE
-from RCAIDE.Core import Units
+from RCAIDE.Framework.Core import Units
 
 import numpy as np
 
@@ -19,7 +19,7 @@ import numpy as np
 def setup(analyses):
     
     # the mission container
-    missions = RCAIDE.Analyses.Mission.Mission.Container()
+    missions = RCAIDE.Framework.Mission.Mission.Container()
 
     # ------------------------------------------------------------------
     #   Base Mission
@@ -35,24 +35,24 @@ def base(analyses):
     #   Initialize the Mission
     # ------------------------------------------------------------------
 
-    mission = RCAIDE.Analyses.Mission.Sequential_Segments()
+    mission = RCAIDE.Framework.Mission.Sequential_Segments()
     mission.tag = 'the_mission'
 
     #airport
-    airport = RCAIDE.Attributes.Airports.Airport()
+    airport = RCAIDE.Library.Attributes.Airports.Airport()
     airport.altitude   =  0.0  * Units.ft
     airport.delta_isa  =  0.0
-    airport.atmosphere =  RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    airport.atmosphere =  RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
 
     mission.airport = airport    
 
     # unpack Segments module
-    Segments = RCAIDE.Analyses.Mission.Segments
+    Segments = RCAIDE.Framework.Mission.Segments
 
     # base segment
     base_segment = Segments.Segment()
-    atmosphere=RCAIDE.Attributes.Atmospheres.Earth.US_Standard_1976()
-    planet = RCAIDE.Attributes.Planets.Earth()
+    atmosphere=RCAIDE.Library.Attributes.Atmospheres.Earth.US_Standard_1976()
+    planet = RCAIDE.Library.Attributes.Planets.Earth()
     
     # ------------------------------------------------------------------
     #   First Climb Segment: Constant Speed, Constant Rate

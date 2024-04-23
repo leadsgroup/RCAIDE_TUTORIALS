@@ -10,15 +10,15 @@ import pickle
 from copy import deepcopy 
 
 import RCAIDE 
-from RCAIDE.Core                                                              import Data , Units 
-from RCAIDE.Energy.Networks.Battery_Electric_Rotor                            import Battery_Electric_Rotor
+from RCAIDE.Framework.Core                                                              import Data , Units 
+from RCAIDE.Framework.Networks.Battery_Electric_Rotor                            import Battery_Electric_Rotor
 from RCAIDE.Methods.Propulsion                                                import design_propeller 
 from RCAIDE.Methods.Power.Battery.Sizing                                      import initialize_from_circuit_configuration  
 from RCAIDE.Methods.Propulsion.electric_motor_sizing                          import size_optimal_motor
 from RCAIDE.Methods.Weights.Correlations.Propulsion                           import nasa_motor
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform                         import segment_properties
+from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform                         import segment_properties
 from RCAIDE.Methods.Weights.Buildups.eVTOL.empty                              import empty  
-from RCAIDE.Methods.Geometry.Two_Dimensional.Planform.wing_segmented_planform import wing_segmented_planform
+from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform.wing_segmented_planform import wing_segmented_planform
 from RCAIDE.Methods.Weights.Buildups.eVTOL.converge_evtol_weight              import converge_evtol_weight  
 from RCAIDE.Methods.Center_of_Gravity.compute_component_centers_of_gravity    import compute_component_centers_of_gravity
  
@@ -58,7 +58,7 @@ def base_vehicle_setup() :
     
     cruise_speed                          = 175.*Units['mph']    
     altitude                              = 2500. * Units.ft
-    atmo                                  = RCAIDE.Analyses.Atmospheric.US_Standard_1976()
+    atmo                                  = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
     freestream                            = atmo.compute_values (0.)
     freestream0                           = atmo.compute_values (altitude)
     mach_number                           = (cruise_speed/freestream.speed_of_sound)[0][0] 
@@ -68,7 +68,7 @@ def base_vehicle_setup() :
     # ------------------------------------------------------------------        
     #   Main Wing
     # ------------------------------------------------------------------    
-    wing                                  = RCAIDE.Components.Wings.Main_Wing()
+    wing                                  = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag                              = 'main_wing' 
     wing.sweeps.quarter_chord             = 0.0 * Units.deg
     wing.thickness_to_chord               = 0.12
@@ -88,7 +88,7 @@ def base_vehicle_setup() :
     wing.high_lift                        = True 
     wing.winglet_fraction                 = 0.0  
     wing.dynamic_pressure_ratio           = 1.0  
-    airfoil                               = RCAIDE.Components.Airfoils.Airfoil()
+    airfoil                               = RCAIDE.Library.Components.Airfoils.Airfoil()
     airfoil.coordinate_file               = '../Airfoils/NACA_63_412.txt'
     
     cg_x = wing.origin[0][0] + 0.25*wing.chords.mean_aerodynamic
@@ -96,7 +96,7 @@ def base_vehicle_setup() :
     vehicle.mass_properties.center_of_gravity = [[cg_x,   0.  ,  cg_z ]]  # SOURCE: Design and aerodynamic analysis of a twin-engine commuter aircraft
 
     # Wing Segments
-    segment                               = RCAIDE.Components.Wings.Segment()
+    segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'inboard'
     segment.percent_span_location         = 0.0 
     segment.twist                         = 4. * Units.degrees   
@@ -107,7 +107,7 @@ def base_vehicle_setup() :
     segment.append_airfoil(airfoil)
     wing.append_segment(segment)
 
-    segment                               = RCAIDE.Components.Wings.Segment()
+    segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'outboard'
     segment.percent_span_location         = 0.5438
     segment.twist                         = 3.0* Units.degrees 
@@ -119,7 +119,7 @@ def base_vehicle_setup() :
     wing.append_segment(segment)
     
     # Wing Segments
-    segment                               = RCAIDE.Components.Wings.Segment()
+    segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'winglet'
     segment.percent_span_location         = 0.98
     segment.twist                         = 0.  * Units.degrees 
@@ -130,7 +130,7 @@ def base_vehicle_setup() :
     segment.append_airfoil(airfoil)
     wing.append_segment(segment) 
 
-    segment                               = RCAIDE.Components.Wings.Segment()
+    segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'tip'
     segment.percent_span_location         = 1.
     segment.twist                         = 0. * Units.degrees 
@@ -153,7 +153,7 @@ def base_vehicle_setup() :
     # ------------------------------------------------------------------        
     #  Horizontal Stabilizer
     # ------------------------------------------------------------------       
-    wing                                  = RCAIDE.Components.Wings.Wing()
+    wing                                  = RCAIDE.Library.Components.Wings.Wing()
     wing.tag                              = 'horizontal_stabilizer' 
     wing.sweeps.quarter_chord             = 0.0 * Units.deg
     wing.thickness_to_chord               = 0.12
@@ -182,7 +182,7 @@ def base_vehicle_setup() :
     # ------------------------------------------------------------------
     #   Vertical Stabilizer
     # ------------------------------------------------------------------ 
-    wing                                  = RCAIDE.Components.Wings.Wing()
+    wing                                  = RCAIDE.Library.Components.Wings.Wing()
     wing.tag                              = 'vertical_stabilizer'     
     wing.sweeps.quarter_chord             = 25. * Units.deg
     wing.thickness_to_chord               = 0.12
@@ -210,7 +210,7 @@ def base_vehicle_setup() :
     # ------------------------------------------------------------------
     #  Fuselage
     # ------------------------------------------------------------------
-    fuselage = RCAIDE.Components.Fuselages.Fuselage()
+    fuselage = RCAIDE.Library.Components.Fuselages.Fuselage()
     fuselage.tag                                = 'fuselage'
     fuselage.seats_abreast                      = 2.
     fuselage.fineness.nose                      = 1.6
@@ -232,7 +232,7 @@ def base_vehicle_setup() :
     fuselage.effective_diameter                 = 50. * Units.inches 
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_0'
     segment.percent_x_location                  = 0
     segment.percent_z_location                  = 0
@@ -241,7 +241,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_1'
     segment.percent_x_location                  = 0.007279116466
     segment.percent_z_location                  = 0.001253114988
@@ -250,7 +250,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_2'
     segment.percent_x_location                  = 0.01941097724
     segment.percent_z_location                  = 0.001216095397
@@ -259,7 +259,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_3'
     segment.percent_x_location                  = 0.06308567604
     segment.percent_z_location                  = 0.007395489231
@@ -268,7 +268,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_4'
     segment.percent_x_location                  = 0.1653761217
     segment.percent_z_location                  = 0.02891281352
@@ -277,7 +277,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_5'
     segment.percent_x_location                  = 0.2426372155
     segment.percent_z_location                  = 0.04214148761
@@ -286,7 +286,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_6'
     segment.percent_x_location                  = 0.2960174029
     segment.percent_z_location                  = 0.04705241831
@@ -295,7 +295,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_7'
     segment.percent_x_location                  = 0.3809404284
     segment.percent_z_location                  = 0.05313580461
@@ -304,7 +304,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_8'
     segment.percent_x_location                  = 0.5046854083
     segment.percent_z_location                  = 0.04655492473
@@ -313,7 +313,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_9'
     segment.percent_x_location                  = 0.6454149933
     segment.percent_z_location                  = 0.03741966266
@@ -322,7 +322,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_10'
     segment.percent_x_location                  = 0.985107095
     segment.percent_z_location                  = 0.04540283436
@@ -331,7 +331,7 @@ def base_vehicle_setup() :
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_11'
     segment.percent_x_location                  = 1
     segment.percent_z_location                  = 0.04787575562
@@ -345,7 +345,7 @@ def base_vehicle_setup() :
     # ------------------------------------------------------------------
     #   Nacelles
     # ------------------------------------------------------------------ 
-    nacelle                = RCAIDE.Components.Nacelles.Nacelle()
+    nacelle                = RCAIDE.Library.Components.Nacelles.Nacelle()
     nacelle.tag            = 'nacelle_1'
     nacelle.length         = 2
     nacelle.diameter       = 42 * Units.inches
@@ -353,49 +353,49 @@ def base_vehicle_setup() :
     nacelle.origin         = [[2.5,2.5,1.0]]
     nacelle.flow_through   = False  
     
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_1'
     nac_segment.percent_x_location = 0.0  
     nac_segment.height             = 0.0
     nac_segment.width              = 0.0
     nacelle.append_segment(nac_segment)   
     
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_2'
     nac_segment.percent_x_location = 0.1  
     nac_segment.height             = 0.5
     nac_segment.width              = 0.65
     nacelle.append_segment(nac_segment)   
     
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_3'
     nac_segment.percent_x_location = 0.3  
     nac_segment.height             = 0.52
     nac_segment.width              = 0.7
     nacelle.append_segment(nac_segment)  
      
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_4'
     nac_segment.percent_x_location = 0.5  
     nac_segment.height             = 0.5
     nac_segment.width              = 0.65
     nacelle.append_segment(nac_segment)  
     
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_5'
     nac_segment.percent_x_location = 0.7 
     nac_segment.height             = 0.4
     nac_segment.width              = 0.6
     nacelle.append_segment(nac_segment)   
     
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_6'
     nac_segment.percent_x_location = 0.9 
     nac_segment.height             = 0.3
     nac_segment.width              = 0.5
     nacelle.append_segment(nac_segment)  
     
-    nac_segment                    = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    nac_segment                    = RCAIDE.Library.Components.Nacelles.Segment()
     nac_segment.tag                = 'segment_7'
     nac_segment.percent_x_location = 1.0  
     nac_segment.height             = 0.0
@@ -418,19 +418,19 @@ def base_vehicle_setup() :
     net.esc_group_indexes   = [0,0]    
 
     # Component 1: ESC
-    esc_1                     = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
+    esc_1                     = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
     esc_1.efficiency          = 0.95 
     esc_1.tag                 = 'esc_1'
     net.electronic_speed_controllers.append(esc_1)     
 
-    esc_2                     = RCAIDE.Energy.Propulsion.Modulators.Electronic_Speed_Controller()
+    esc_2                     = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
     esc_2.efficiency          = 0.95 
     esc_2.tag                 = 'esc_2'
     net.electronic_speed_controllers.append(esc_2)      
      
     
     # Component 2: Propeller 
-    propeller                                   = RCAIDE.Energy.Propulsion.Converters.Propeller()
+    propeller                                   = RCAIDE.Library.Components.Propulsors.Converters.Propeller()
     propeller.number_of_blades                  = 3 
     propeller.tag                               = 'propeller_1'  
     propeller.tip_radius                        = 1.72/2   
@@ -443,7 +443,7 @@ def base_vehicle_setup() :
     propeller.rotation                          = -1 
     propeller.variable_pitch                    = True  
     propeller.origin                            = [[2.,2.5,0.95]]
-    airfoil                                     = RCAIDE.Components.Airfoils.Airfoil() 
+    airfoil                                     = RCAIDE.Library.Components.Airfoils.Airfoil() 
     ospath                                      = os.path.abspath(__file__)
     separator                                   = os.path.sep
     rel_path                                    = os.path.dirname(ospath) + separator  
@@ -469,7 +469,7 @@ def base_vehicle_setup() :
     net.rotors.append(propeller_left) 
                  
     # Component 3: Battery       
-    bat                                                    = RCAIDE.Energy.Sources.Batteries.Lithium_Ion_NMC() 
+    bat                                                    = RCAIDE.Library.Components.Energy.Batteries.Lithium_Ion_NMC() 
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 100
     initialize_from_circuit_configuration(bat)  
@@ -482,11 +482,11 @@ def base_vehicle_setup() :
     net.voltage                                            = bat.pack.max_voltage
     
     # Component 4: Miscellaneous Systems
-    sys                       = RCAIDE.Components.Systems.System()
+    sys                       = RCAIDE.Library.Components.Systems.System()
     sys.mass_properties.mass  = 5 # kg
  
     # Component 5: Motor   
-    propeller_motor                         = RCAIDE.Energy.Propulsion.Converters.Motor()
+    propeller_motor                         = RCAIDE.Library.Components.Propulsors.Converters.DC_Motor()
     propeller_motor.efficiency              = 0.95
     propeller_motor.gearbox_efficiency      = 1.
     propeller_motor.origin                  = [[2.,  2.5, 0.784]]
@@ -505,13 +505,13 @@ def base_vehicle_setup() :
     net.motors.append(propeller_motor_left) 
 
     # Component 6: Payload
-    payload                                     = RCAIDE.Energy.Peripherals.Payload()
+    payload                                     = RCAIDE.Library.Components.Payloads.Payload()
     payload.power_draw                          = 10. # Watts
     payload.mass_properties.mass                = 1.0 * Units.kg
     net.payload                                 = payload
                
     # Component 7: Avionics               
-    avionics                                    = RCAIDE.Energy.Peripherals.Avionics()
+    avionics                                    = RCAIDE.Library.Components.Systems.Avionics()
     avionics.power_draw                         = 20. # Watts
     net.avionics                                = avionics
 
@@ -538,9 +538,9 @@ def base_vehicle_setup() :
 # --------------------------------------------------------------------- 
 def configs_setup(vehicle): 
     
-    configs = RCAIDE.Components.Configs.Config.Container()
+    configs = RCAIDE.Library.Components.Configs.Config.Container()
 
-    base_config = RCAIDE.Components.Configs.Config(vehicle)
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle)
     base_config.tag = 'base'
     configs.append(base_config)    
      

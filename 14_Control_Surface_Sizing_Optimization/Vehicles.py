@@ -5,7 +5,7 @@
 # ----------------------------------------------------------------------     
 
 import RCAIDE
-from RCAIDE.Core import Units , Data
+from RCAIDE.Framework.Core import Units , Data
 import numpy as np    
 from RCAIDE.Plots.Performance.Mission_Plots                                   import *  
 from RCAIDE.Plots.Geometry                                                    import * 
@@ -57,7 +57,7 @@ def vehicle_setup():
     # ------------------------------------------------------------------        
     #   Main Wing
     # ------------------------------------------------------------------    
-    wing                                  = RCAIDE.Components.Wings.Main_Wing()
+    wing                                  = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag                              = 'main_wing' 
     wing.sweeps.leading_edge              = 2.996 * Units.degrees 
     wing.thickness_to_chord               = 12
@@ -79,10 +79,10 @@ def vehicle_setup():
     wing.winglet_fraction                 = 0.0  
     wing.dynamic_pressure_ratio           = 1.0  
     
-    tip_airfoil                           = RCAIDE.Components.Airfoils.Airfoil()
+    tip_airfoil                           = RCAIDE.Library.Components.Airfoils.Airfoil()
     tip_airfoil.coordinate_file           = '../Airfoils/NACA_6410.txt' 
  
-    root_airfoil                          = RCAIDE.Components.Airfoils.Airfoil()
+    root_airfoil                          = RCAIDE.Library.Components.Airfoils.Airfoil()
     root_airfoil.coordinate_file          = '../Airfoils/NACA_4415.txt'  
     # add to vehicle
     vehicle.append_component(wing)
@@ -91,7 +91,7 @@ def vehicle_setup():
     # ------------------------------------------------------------------        
     #  Horizontal Stabilizer
     # ------------------------------------------------------------------       
-    wing                                  = RCAIDE.Components.Wings.Wing()
+    wing                                  = RCAIDE.Library.Components.Wings.Wing()
     wing.tag                              = 'horizontal_stabilizer'  
     wing.sweeps.leading_edge              = 6 * Units.degrees 
     wing.thickness_to_chord               = 12
@@ -120,7 +120,7 @@ def vehicle_setup():
     # ------------------------------------------------------------------
     #   Vertical Stabilizer
     # ------------------------------------------------------------------ 
-    wing                                  = RCAIDE.Components.Wings.Wing()
+    wing                                  = RCAIDE.Library.Components.Wings.Wing()
     wing.tag                              = 'vertical_stabilizer'   
     wing.sweeps.leading_edge              = 20 * Units.degrees 
     wing.thickness_to_chord               = 12.5
@@ -149,7 +149,7 @@ def vehicle_setup():
     # ------------------------------------------------------------------
     #  Fuselage
     # ------------------------------------------------------------------
-    fuselage = RCAIDE.Components.Fuselages.Fuselage()
+    fuselage = RCAIDE.Library.Components.Fuselages.Fuselage()
     fuselage.tag                                = 'fuselage'
     fuselage.seats_abreast                      = 2
     fuselage.lengths.total                      = 8.349950916 
@@ -160,7 +160,7 @@ def vehicle_setup():
     fuselage.effective_diameter                 = 1.22028016 
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_0'
     segment.percent_x_location                  = 0
     segment.percent_z_location                  = 0
@@ -169,7 +169,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_1'
     segment.percent_x_location                  =  0.028527593
     segment.percent_z_location                  =  0
@@ -178,7 +178,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_2'
     segment.percent_x_location                  = 0.187342754 
     segment.percent_z_location                  = 0 
@@ -187,7 +187,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_3'
     segment.percent_x_location                  = 0.242034847 
     segment.percent_z_location                  = 0.011503528 
@@ -196,7 +196,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_4'
     segment.percent_x_location                  = 0.296715183 
     segment.percent_z_location                  = 0.015984303 
@@ -205,7 +205,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_5'
     segment.percent_x_location                  = 0.510275342 
     segment.percent_z_location                  = -0.005
@@ -214,7 +214,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
 
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_6'
     segment.percent_x_location                  = 0.833284347 
     segment.percent_z_location                  = 0.014138855 
@@ -223,7 +223,7 @@ def vehicle_setup():
     fuselage.Segments.append(segment)
  
     # Segment
-    segment                                     = RCAIDE.Components.Lofted_Body_Segment.Segment()
+    segment                                     = RCAIDE.Library.Components.Fuselages.Segment()
     segment.tag                                 = 'segment_7'
     segment.percent_x_location                  = 1
     segment.percent_z_location                  = 0.018978667 
@@ -238,8 +238,8 @@ def vehicle_setup():
     #   Fuel
     # ------------------------------------------------------------------    
     # define fuel weight needed to size fuel system
-    fuel                                        = RCAIDE.Attributes.Propellants.Aviation_Gasoline()
-    fuel.mass_properties                        = RCAIDE.Components.Mass_Properties() 
+    fuel                                        = RCAIDE.Library.Attributes.Propellants.Aviation_Gasoline()
+    fuel.mass_properties                        = RCAIDE.Library.Components.Mass_Properties() 
     fuel.number_of_tanks                        = 1.
     fuel.origin                                 = wing.origin
     fuel.internal_volume                        = fuel.mass_properties.mass/fuel.density #all of the fuel volume is internal
@@ -252,13 +252,13 @@ def vehicle_setup():
     # ------------------------------------------------------------------    
     
     # build network
-    net                                         = RCAIDE.Energy.Networks.Internal_Combustion_Propeller()
+    net                                         = RCAIDE.Framework.Networks.Internal_Combustion_Propeller()
     net.tag                                     = 'internal_combustion'
     net.number_of_engines                       = 1.
     net.identical_propellers                    = True
                                                 
     # the engine                    
-    engine                                  = RCAIDE.Energy.Propulsion.Converters.Internal_Combustion_Engine()
+    engine                                  = RCAIDE.Library.Components.Propulsors.Converters.Internal_Combustion_Engine()
     engine.sea_level_power                  = 180. * Units.horsepower
     engine.flat_rate_altitude               = 0.0
     engine.rated_speed                      = 2700. * Units.rpm
@@ -266,7 +266,7 @@ def vehicle_setup():
     net.engines.append(engine)
     
     # the prop
-    prop = RCAIDE.Energy.Propulsion.Converters.Propeller()
+    prop = RCAIDE.Library.Components.Propulsors.Converters.Propeller()
     prop.number_of_blades                      = 2.0
     prop.tip_radius                            = 2.14/2
     prop.hub_radius                            = 8.     * Units.inches
@@ -295,7 +295,7 @@ def vehicle_setup():
 
     #find uninstalled avionics weight
     Wuav                                        = 2. * Units.lbs
-    avionics                                    = RCAIDE.Energy.Peripherals.Avionics()
+    avionics                                    = RCAIDE.Library.Components.Systems.Avionics()
     avionics.mass_properties.uninstalled        = Wuav
     vehicle.avionics                            = avionics  
     
@@ -317,7 +317,7 @@ def stick_fixed_stability_setup():
  
 def elevator_sizing_setup(vehicle):   
     hs_wing                        = vehicle.wings.horizontal_stabilizer 
-    elevator                       = RCAIDE.Components.Wings.Control_Surfaces.Elevator()
+    elevator                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Elevator()
     elevator.tag                   = 'elevator'
     elevator.span_fraction_start   = 0.1
     elevator.span_fraction_end     = 0.9
@@ -329,7 +329,7 @@ def elevator_sizing_setup(vehicle):
 
 def aileron_rudder_sizing_setup(vehicle):    
     mw_wing                       = vehicle.wings.main_wing 
-    aileron                       = RCAIDE.Components.Wings.Control_Surfaces.Aileron()
+    aileron                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Aileron()
     aileron.tag                   = 'aileron'
     aileron.span_fraction_start   = 0.7
     aileron.span_fraction_end     = 0.9 
@@ -339,7 +339,7 @@ def aileron_rudder_sizing_setup(vehicle):
     
     if vehicle.rudder_flag:
         vs_wing                      = vehicle.wings.vertical_stabilizer 
-        rudder                       = RCAIDE.Components.Wings.Control_Surfaces.Rudder()
+        rudder                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Rudder()
         rudder.tag                   = 'rudder'
         rudder.span_fraction_start   = 0.2
         rudder.span_fraction_end     = 0.8
@@ -352,7 +352,7 @@ def aileron_rudder_sizing_setup(vehicle):
  
 def flap_sizing_setup(vehicle):   
     mw_wing                       = vehicle.wings.main_wing
-    flap                          = RCAIDE.Components.Wings.Control_Surfaces.Flap()
+    flap                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Flap()
     flap.tag                      = 'flap'
     flap.span_fraction_start      = 0.2
     flap.span_fraction_end        = 0.5
@@ -367,33 +367,33 @@ def flap_sizing_setup(vehicle):
 # ---------------------------------------------------------------------
 
 def stick_fixed_stability_configs_setup(vehicle): 
-    configs     = RCAIDE.Components.Configs.Config.Container() 
-    base_config = RCAIDE.Components.Configs.Config(vehicle) 
-    config      = RCAIDE.Components.Configs.Config(base_config)
+    configs     = RCAIDE.Library.Components.Configs.Config.Container() 
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle) 
+    config      = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag  = 'stick_fixed_cruise'
     configs.append(config) 
     return configs  
 
 def elevator_sizing_configs_setup(vehicle): 
-    configs     = RCAIDE.Components.Configs.Config.Container() 
-    base_config = RCAIDE.Components.Configs.Config(vehicle) 
-    config      = RCAIDE.Components.Configs.Config(base_config)
+    configs     = RCAIDE.Library.Components.Configs.Config.Container() 
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle) 
+    config      = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag  = 'elevator_sizing'   
     configs.append(config)     
     return configs
 
 def aileron_rudder_sizing_configs_setup(vehicle): 
-    configs     = RCAIDE.Components.Configs.Config.Container() 
-    base_config = RCAIDE.Components.Configs.Config(vehicle)  
-    config      = RCAIDE.Components.Configs.Config(base_config)
+    configs     = RCAIDE.Library.Components.Configs.Config.Container() 
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle)  
+    config      = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag  = 'aileron_rudder_sizing'   
     configs.append(config)   
     return configs  
 
 def flap_sizing_configs_setup(vehicle): 
-    configs     = RCAIDE.Components.Configs.Config.Container()  
-    base_config = RCAIDE.Components.Configs.Config(vehicle)  
-    config      = RCAIDE.Components.Configs.Config(base_config)
+    configs     = RCAIDE.Library.Components.Configs.Config.Container()  
+    base_config = RCAIDE.Library.Components.Configs.Config(vehicle)  
+    config      = RCAIDE.Library.Components.Configs.Config(base_config)
     config.tag  = 'flap_sizing'   
     configs.append(config)   
     return configs
