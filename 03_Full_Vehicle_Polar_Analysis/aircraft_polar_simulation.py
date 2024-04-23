@@ -10,7 +10,7 @@ The script below documents how to set up and plot the results of polar analysis 
 import RCAIDE
 from RCAIDE.Framework.Core import Units , Data  
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties  
-from RCAIDE.Library.Methods.Energy.Propulsors.Turbofan_Propulsor   import design_turbofan , size_turbofan_nacelle_geometry
+from RCAIDE.Library.Methods.Energy.Propulsors.Turbofan_Propulsor   import design_turbofan , size_turbofan_nacelle
 from RCAIDE.Library.Methods.Stability.Center_of_Gravity            import compute_component_centers_of_gravity
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import wing_segmented_planform
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties 
@@ -837,7 +837,7 @@ def vehicle_setup():
     nac_segment.height                          = 1.7 
     nac_segment.width                           = 1.7
     nacelle.append_segment(nac_segment)           
-    size_turbofan_nacelle_geometry(turbofan, nacelle)
+    size_turbofan_nacelle(turbofan, nacelle)
     turbofan.nacelle                            = nacelle
     
     fuel_line.propulsors.append(turbofan)  

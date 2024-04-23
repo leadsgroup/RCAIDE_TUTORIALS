@@ -13,7 +13,7 @@ passenger carrying aircraft. Here, the Boeing 737-800 model is used.
 import RCAIDE
 from RCAIDE.Framework.Core import Units   
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties  
-from RCAIDE.Library.Methods.Energy.Propulsors.Turbofan_Propulsor   import design_turbofan , size_turbofan_nacelle_geometry
+from RCAIDE.Library.Methods.Energy.Propulsors.Turbofan_Propulsor   import design_turbofan , size_turbofan_nacelle
 from RCAIDE.Library.Methods.Stability.Center_of_Gravity            import compute_component_centers_of_gravity
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties
 from RCAIDE.Library.Plots                 import *     
@@ -246,14 +246,14 @@ def vehicle_setup():
     wing.append_segment(segment)
      
 
-    ## control surfaces -------------------------------------------
-    #slat                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Slat()
-    #slat.tag                      = 'slat'
-    #slat.span_fraction_start      = 0.2
-    #slat.span_fraction_end        = 0.963
-    #slat.deflection               = 0.0 * Units.degrees
-    #slat.chord_fraction           = 0.075
-    #wing.append_control_surface(slat)
+    # control surfaces -------------------------------------------
+    slat                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Slat()
+    slat.tag                      = 'slat'
+    slat.span_fraction_start      = 0.2
+    slat.span_fraction_end        = 0.963
+    slat.deflection               = 0.0 * Units.degrees
+    slat.chord_fraction           = 0.075
+    wing.append_control_surface(slat)
 
     flap                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Flap()
     flap.tag                      = 'flap'
@@ -264,13 +264,14 @@ def vehicle_setup():
     flap.chord_fraction           = 0.30
     wing.append_control_surface(flap)
 
-    #aileron                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Aileron()
-    #aileron.tag                   = 'aileron'
-    #aileron.span_fraction_start   = 0.7
-    #aileron.span_fraction_end     = 0.963
-    #aileron.deflection            = 0.0 * Units.degrees
-    #aileron.chord_fraction        = 0.16
-    #wing.append_control_surface(aileron)
+    aileron                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Aileron()
+    aileron.tag                   = 'aileron'
+    aileron.span_fraction_start   = 0.7
+    aileron.span_fraction_end     = 0.963
+    aileron.deflection            = 0.0 * Units.degrees
+    aileron.chord_fraction        = 0.16
+    wing.append_control_surface(aileron)
+
 
     # Fill out more segment properties automatically
     wing = segment_properties(wing)   
@@ -731,7 +732,7 @@ def vehicle_setup():
     nac_segment.height                          = 1.7 
     nac_segment.width                           = 1.7
     nacelle.append_segment(nac_segment)           
-    size_turbofan_nacelle_geometry(turbofan, nacelle)
+    size_turbofan_nacelle(turbofan, nacelle)
     turbofan.nacelle                            = nacelle
     
     fuel_line.propulsors.append(turbofan)  
