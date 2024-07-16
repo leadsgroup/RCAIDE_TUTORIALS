@@ -10,12 +10,13 @@ The script below documents how to set up and plot the results of polar analysis 
 import RCAIDE
 from RCAIDE.Framework.Core import Units , Data  
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties  
-from RCAIDE.Library.Methods.Energy.Propulsors.Turbofan_Propulsor   import design_turbofan , size_turbofan_nacelle
+from RCAIDE.Library.Methods.Propulsors.Turbofan_Propulsor          import design_turbofan  
 from RCAIDE.Library.Methods.Stability.Center_of_Gravity            import compute_component_centers_of_gravity
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import wing_segmented_planform
 from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties 
 from RCAIDE.Library.Plots                                          import *      
 from RCAIDE.Library.Methods.Aerodynamics.Vortex_Lattice_Method     import VLM
+
 
 import matplotlib.cm as cm   
 import numpy as np
@@ -28,8 +29,6 @@ import os
 # ---------------------------------------------------------------------- 
 def main(): 
     vehicle                            = vehicle_setup() 
-    wing_tag                           = 'main_wing' # renamed inboard wing
-    control_surface_tag                = 'outboard_flap'
     control_surface_deflection_angles  = np.linspace(-10,20,7)*Units.degrees
     airspeed                           = 300*Units['knots']
     altitude                           = 5000.0*Units.feet
@@ -42,35 +41,29 @@ def main():
     # setup figures
     #------------------------------------------------------------------------
     fig = plt.figure('Aero_Coefficients')
-    fig.set_size_inches(12,8)
+    fig.set_size_inches(12,6)
     fig.suptitle('Boeing 737: $S_{ref}$ = ' + str(round(S_ref,2)) + ' MAC =' + str(round(MAC,2)))
-    axes1 = fig.add_subplot(2,2,1)
+    axes1 = fig.add_subplot(1,3,1)
     axes1.set_title('$C_L$ vs AoA')
     axes1.set_ylabel('Coefficient of Lift')
     axes1.set_xlabel('Angle of Attack (degrees)') 
 
-    axes2 = fig.add_subplot(2,2,2)
+    axes2 = fig.add_subplot(1,3,2)
     axes2.set_title('$C_{Di}$ vs. AoA')
     axes2.set_ylabel('Coefficient of Drag')
     axes2.set_xlabel('Angle of Attack (degrees)') 
 
-    axes3 = fig.add_subplot(2,2,3)
+    axes3 = fig.add_subplot(1,3,3)
     axes3.set_title('$C_{Di}$ vs. $C_L^{2}$')
     axes3.set_ylabel('Coefficient of Drag')
-    axes3.set_xlabel('Lineraized Coefficient of Lift ($CL^2$)') 
-
-    axes4 = fig.add_subplot(2,2,4)
-    axes4.set_title('$C_M$ vs. AoA')
-    axes4.set_ylabel('Coefficient of Moment')
-    axes4.set_xlabel('Angle of Attack (degrees)') 
-    plt.tight_layout()
+    axes3.set_xlabel('Lineraized Coefficient of Lift ($CL^2$)')  
     
     linecolor_1 = cm.jet(np.linspace(0, 1,num_def))   
     linecolor_2 = cm.jet(np.linspace(0, 1,num_def)) 
-    linestyle_1 = ['-']*num_def
-    linestyle_2 = ['--']*num_def
-    marker_1    = ['o']*num_def
-    marker_2    = ['s']*num_def 
+    linestyle_1 = '-'
+    linestyle_2 = None 
+    marker_1    = None 
+    marker_2    = 's'
 
     #------------------------------------------------------------------------
     # setup flight conditions
@@ -81,34 +74,23 @@ def main():
     Mach           = airspeed/a 
     
     AoA_range  = np.atleast_2d(alpha_range).T  
-    
-    # check if control surface is defined 
-    CS_flag = False
-    for wing in vehicle.wings:
-        if 'control_surfaces' in wing:
-            if control_surface_tag in wing.control_surfaces:
-                CS_flag = True 
-    
-    
+     
     for i in range (num_def): 
         # change control surface deflection  
-         
-        if CS_flag:
-            vehicle.wings[wing_tag].control_surfaces[control_surface_tag].deflection = control_surface_deflection_angles[i] 
+          
+        vehicle.wings.main_wing.control_surfaces.flap.deflection = control_surface_deflection_angles[i] 
         
         # get polar 
         results    = compute_polars(vehicle,AoA_range,Mach,altitude)
-        
-        if CS_flag:
-            line_label =  wing_tag + '-' + control_surface_tag + ' ' +\
-                str(round( control_surface_deflection_angles[i]/Units.degrees,3)) + '$\degree$ defl.'
-        else: 
-            line_label =  ''
+         
+        line_label =  vehicle.wings.main_wing.tag + 'flap : ' + str(round( control_surface_deflection_angles[i]/Units.degrees,3)) + '$\degree$ defl.' 
         
         # plot  
-        plot_polars(axes1,axes2,axes3,axes4,AoA_range,Mach,results,linestyle_1[i], linecolor_1[i],marker_1[i],\
-                    linestyle_2[i], linecolor_2[i],marker_2[i],line_label)
-    axes1.legend(loc='upper left', prop={'size': 8})   
+        plot_polars(axes1,axes2,axes3,AoA_range,Mach,results,linestyle_1, linecolor_1[i],marker_1,\
+                    linestyle_2, linecolor_2[i],marker_2,line_label)
+        
+    axes2.legend(loc='upper left', prop={'size': 8}) 
+    plt.tight_layout()
     return 
 
 
@@ -127,27 +109,14 @@ def compute_polars(vehicle,AoA_range,Mach,Alt):
     mu             = atmo_data.dynamic_viscosity[0] 
     V              = a*Mach
     re             = (V*rho*MAC)/mu  
+      
+    results       =  Data()
+    # -----------------------------------------------------------------
+    # Evaluate Without Surrogate
+    # ----------------------------------------------------------------- 
     
-    n_aoa      = len(AoA_range) 
-    vortices   = 4
-
-    CL_Visc = np.zeros(n_aoa)
-    CD_Visc = np.zeros(n_aoa)
-
-    # ---------------------------------------------------------------------------------------
-    # Surrogates
-    # ---------------------------------------------------------------------------------------
-    aerodynamics                                                                        = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
-    aerodynamics.settings.fuselage_lift_correction                                      = 1. 
-    aerodynamics.process.compute.lift.inviscid_wings.settings.use_surrogate             = False
-    aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vortex_distribution  = False
-    aerodynamics.process.compute.lift.inviscid_wings.settings.plot_vehicle              = False
-    aerodynamics.process.compute.lift.inviscid_wings.geometry                           = vehicle
-    aerodynamics.process.compute.lift.inviscid_wings.settings.model_fuselage            = True 
-    aerodynamics.geometry = vehicle
-    
-    state            = RCAIDE.Framework.Mission.Common.State()
-    state.conditions = RCAIDE.Framework.Mission.Common.Results() 
+    state                                         = RCAIDE.Framework.Mission.Common.State()
+    state.conditions                              = RCAIDE.Framework.Mission.Common.Results() 
     state.conditions.freestream.mach_number       = Mach  * np.ones_like(AoA_range)
     state.conditions.freestream.density           = rho * np.ones_like(AoA_range)
     state.conditions.freestream.dynamic_viscosity = mu  * np.ones_like(AoA_range)
@@ -156,43 +125,38 @@ def compute_polars(vehicle,AoA_range,Mach,Alt):
     state.conditions.freestream.reynolds_number   = re  * np.ones_like(AoA_range)
     state.conditions.freestream.velocity          = V   * np.ones_like(AoA_range)
     state.conditions.aerodynamics.angles.alpha    = AoA_range 
- 
-    aerodynamics.process.compute.lift.inviscid_wings.initialize()     
-    _                    = aerodynamics.evaluate(state) 
-    CL_Visc              = state.conditions.aerodynamics.lift_breakdown.total 
-    CD_Visc              = state.conditions.aerodynamics.drag_breakdown.total 
- 
-    # -----------------------------------------------------------------
-    # VLM No Surrogate
-    # -----------------------------------------------------------------
-    settings = Data()
-    settings.use_surrogate = False
-    settings.number_of_spanwise_vortices      = vortices **2
-    settings.number_of_chordwise_vortices     = vortices
-    settings.propeller_wake_model             = False
-    settings.initial_timestep_offset          = 0
-    settings.wake_development_time            = 0.05
-    settings.use_bemt_wake_model              = False
-    settings.number_of_wake_timesteps         = 30
-    settings.leading_edge_suction_multiplier  = 1.0
-    settings.spanwise_cosine_spacing          = True
-    settings.model_fuselage                   = False
-    settings.model_nacelle                    = False
-    settings.wing_spanwise_vortices           = None
-    settings.wing_chordwise_vortices          = None
-    settings.fuselage_spanwise_vortices       = None
-    settings.discretize_control_surfaces      = True
-    settings.fuselage_chordwise_vortices      = None
-    settings.floating_point_precision         = np.float32
-    settings.use_VORLAX_matrix_calculation    = False 
-    settings.use_surrogate                    = True
 
-    # Raw  VLM analysis with no corrections
-    results =  VLM(state.conditions,settings,vehicle)
-    
-    # append viscous results to the results obtained from the inviscid VLM
-    results.CL_Visc = CL_Visc
-    results.CD_Visc = CD_Visc  
+    state.analyses                                  =  Data()
+    aerodynamics                                    = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics.settings.fuselage_lift_correction  = 1. 
+    aerodynamics.settings.use_surrogate             = False 
+    aerodynamics.geometry                           = vehicle
+    aerodynamics.settings.model_fuselage            = True   
+    aerodynamics.initialize()
+    state.analyses.aerodynamics = aerodynamics  
+    _                 = aerodynamics.evaluate(state)
+    results.CL_no_surrogate   = state.conditions.aerodynamics.lift_breakdown.total 
+    results.CD_no_surrogate   = state.conditions.aerodynamics.drag_breakdown.total
+     
+    # ---------------------------------------------------------------------------------------
+    #Evaluate With Surrogate
+    # ---------------------------------------------------------------------------------------
+
+    state.analyses                                  =  Data()
+    aerodynamics                                    = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics.settings.fuselage_lift_correction  = 1. 
+    aerodynamics.settings.use_surrogate             = True 
+    aerodynamics.geometry                           = vehicle
+    aerodynamics.settings.model_fuselage            = True   
+    aerodynamics.initialize() 
+    state.analyses.aerodynamics = aerodynamics
+  
+    _                 = aerodynamics.evaluate(state)
+
+    # append viscous results to the results obtained from the inviscid VLM    
+    results.CL_surrogate   = state.conditions.aerodynamics.lift_breakdown.total 
+    results.CD_surrogate   = state.conditions.aerodynamics.drag_breakdown.total     
+     
     
     return results    
 
@@ -200,32 +164,28 @@ def compute_polars(vehicle,AoA_range,Mach,Alt):
 # -----------------------------------------
 # Plot Polars Aircraft Polars  
 # -----------------------------------------
-def plot_polars(axes1,axes2,axes3,axes4,AoA_range,Mach,results,linestyle_1, 
+def plot_polars(axes1,axes2,axes3,AoA_range,Mach,results,linestyle_1, 
                 linecolor_1,marker_1,linestyle_2, linecolor_2,marker_2,line_label): 
 
-    CL_Inv  = results.CL
-    CDi_Inv = results.CDi
-    CM_Inv  = results.CM    
-    CL_Visc = results.CL_Visc 
-    CD_Visc = results.CD_Visc 
+    CL_no_surrogate = results.CL_no_surrogate
+    CD_no_surrogate = results.CD_no_surrogate 
+    CL_surrogate    = results.CL_surrogate 
+    CD_surrogate    = results.CD_surrogate  
     
-    axes1.plot(AoA_range/Units.degrees,CL_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1,label = line_label) 
-    axes1.plot(AoA_range/Units.degrees,CL_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2)  
+    axes1.plot(AoA_range/Units.degrees,CL_no_surrogate,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
+    axes1.scatter(AoA_range/Units.degrees,CL_surrogate , c = linecolor_2, s = 50, marker  = marker_2)  
     
-    axes2.plot(AoA_range/Units.degrees,CDi_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
-    axes2.plot(AoA_range/Units.degrees,CD_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2) 
+    axes2.plot(AoA_range/Units.degrees,CD_no_surrogate,linestyle = linestyle_1, color = linecolor_1, marker = marker_1,label = line_label) 
+    axes2.scatter(AoA_range/Units.degrees,CD_surrogate , c = linecolor_2, s = 50,marker = marker_2) 
      
-    axes3.plot(CL_Inv**2,CDi_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
-    axes3.plot(CL_Visc**2,CD_Visc,linestyle = linestyle_2, color = linecolor_2, marker = marker_2) 
-     
-    axes4.plot(AoA_range/Units.degrees,CM_Inv,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
+    axes3.plot(CL_no_surrogate**2,CD_no_surrogate,linestyle = linestyle_1, color = linecolor_1, marker = marker_1) 
+    axes3.scatter(CL_surrogate**2,CD_surrogate,  c= linecolor_2,  s = 50,marker = marker_2)  
     
     return
 
 # ----------------------------------------------------------------------
 #   Define the Vehicle
 # ----------------------------------------------------------------------
-
 
 def vehicle_setup(): 
     
@@ -296,7 +256,7 @@ def vehicle_setup():
     root_airfoil                          = RCAIDE.Library.Components.Airfoils.Airfoil()
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
-    rel_path                              = os.path.dirname(ospath) + separator  + '..'  + separator 
+    rel_path                              = os.path.dirname(ospath) + separator  + '..'  + separator  
     root_airfoil.coordinate_file          = rel_path  + 'Airfoils' + separator + 'B737a.txt'
     segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'Root'
@@ -350,36 +310,36 @@ def vehicle_setup():
     segment.sweeps.quarter_chord          = 0.
     segment.thickness_to_chord            = .1
     segment.append_airfoil(tip_airfoil)
-    wing.append_segment(segment) 
-
+    wing.append_segment(segment)
+    
     # Fill out more segment properties automatically
-    wing = wing_segmented_planform(wing)        
+    wing = segment_properties(wing)    
 
     ## control surfaces -------------------------------------------
     #slat                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Slat()
     #slat.tag                      = 'slat'
     #slat.span_fraction_start      = 0.2
-    #slat.span_fraction_end        = 0.9
+    #slat.span_fraction_end        = 0.963
     #slat.deflection               = 0.0 * Units.degrees
     #slat.chord_fraction           = 0.075
     #wing.append_control_surface(slat)
 
     flap                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Flap()
-    flap.tag                      = 'outboard_flap'
-    flap.span_fraction_start      = 0.4
-    flap.span_fraction_end        = 0.6
+    flap.tag                      = 'flap'
+    flap.span_fraction_start      = 0.2
+    flap.span_fraction_end        = 0.7
     flap.deflection               = 0.0 * Units.degrees
     flap.configuration_type       = 'double_slotted'
     flap.chord_fraction           = 0.30
     wing.append_control_surface(flap)
 
     aileron                       = RCAIDE.Library.Components.Wings.Control_Surfaces.Aileron()
-    aileron.tag                   = 'outboard_aileron'
+    aileron.tag                   = 'aileron'
     aileron.span_fraction_start   = 0.7
-    aileron.span_fraction_end     = 0.95
+    aileron.span_fraction_end     = 0.963
     aileron.deflection            = 0.0 * Units.degrees
     aileron.chord_fraction        = 0.16
-    wing.append_control_surface(aileron)  
+    wing.append_control_surface(aileron)
 
     # add to vehicle
     vehicle.append_component(wing)
@@ -769,7 +729,7 @@ def vehicle_setup():
     combustor.alphac                               = 1.0     
     combustor.turbine_inlet_temperature            = 1500
     combustor.pressure_ratio                       = 0.95
-    combustor.fuel_data                            = RCAIDE.Library.Attributes.Propellants.Jet_A()  
+    combustor.fuel_data                            = RCAIDE.Library.Attributes.Propellants.Jet_A1()  
     turbofan.combustor                             = combustor
 
     # core nozzle
@@ -792,52 +752,16 @@ def vehicle_setup():
    
  
     # Nacelle 
-    nacelle                                     = RCAIDE.Library.Components.Nacelles.Nacelle()
+    nacelle                                     = RCAIDE.Library.Components.Nacelles.Body_of_Revolution_Nacelle()
     nacelle.diameter                            = 2.05
     nacelle.length                              = 2.71
     nacelle.tag                                 = 'nacelle_1'
     nacelle.inlet_diameter                      = 2.0
     nacelle.origin                              = [[13.5,4.38,-1.5]] 
-    nacelle.areas.wetted                        = 1.1*np.pi*nacelle.diameter*nacelle.length
-    nacelle.Airfoil.NACA_4_series_flag          = True 
-    nacelle.Airfoil.coordinate_file             = '2410' 
-           
-         
-    nac_segment                                 = RCAIDE.Library.Components.Fuselages.Segment()
-    nac_segment.tag                             = 'segment_1'
-    nac_segment.percent_x_location              = 0.0  
-    nac_segment.height                          = 2.05
-    nac_segment.width                           = 2.05
-    nacelle.append_segment(nac_segment)         
-           
-    nac_segment                                 = RCAIDE.Library.Components.Fuselages.Segment()
-    nac_segment.tag                             = 'segment_2'
-    nac_segment.percent_x_location              = 0.3
-    nac_segment.height                          = 2.1  
-    nac_segment.width                           = 2.1 
-    nacelle.append_segment(nac_segment)         
-           
-    nac_segment                                 = RCAIDE.Library.Components.Fuselages.Segment()
-    nac_segment.tag                             = 'segment_3'
-    nac_segment.percent_x_location              = 0.4  
-    nac_segment.height                          = 2.05
-    nac_segment.width                           = 2.05 
-    nacelle.append_segment(nac_segment)         
-            
-    nac_segment                                 = RCAIDE.Library.Components.Fuselages.Segment()
-    nac_segment.tag                             = 'segment_4'
-    nac_segment.percent_x_location              = 0.75  
-    nac_segment.height                          = 1.9
-    nac_segment.width                           = 1.9
-    nacelle.append_segment(nac_segment)         
-    
-    nac_segment                                 = RCAIDE.Library.Components.Fuselages.Segment()
-    nac_segment.tag                             = 'segment_5'
-    nac_segment.percent_x_location              = 1.0
-    nac_segment.height                          = 1.7 
-    nac_segment.width                           = 1.7
-    nacelle.append_segment(nac_segment)           
-    size_turbofan_nacelle(turbofan, nacelle)
+    nacelle.areas.wetted                        = 1.1*np.pi*nacelle.diameter*nacelle.length 
+    nacelle_airfoil                             = RCAIDE.Library.Components.Airfoils.NACA_4_Series_Airfoil()
+    nacelle_airfoil.NACA_4_Series_code          = '2410'
+    nacelle.append_airfoil(nacelle_airfoil)  
     turbofan.nacelle                            = nacelle
     
     fuel_line.propulsors.append(turbofan)  
@@ -863,7 +787,7 @@ def vehicle_setup():
     fuel_tank.origin                            = wing.origin 
     
     # append fuel 
-    fuel                                        = RCAIDE.Library.Attributes.Propellants.Aviation_Gasoline()   
+    fuel                                        = RCAIDE.Library.Attributes.Propellants.Jet_A1()   
     fuel.mass_properties.mass                   = vehicle.mass_properties.max_takeoff-vehicle.mass_properties.max_fuel
     fuel.origin                                 = vehicle.wings.main_wing.mass_properties.center_of_gravity      
     fuel.mass_properties.center_of_gravity      = vehicle.wings.main_wing.aerodynamic_center
@@ -878,7 +802,7 @@ def vehicle_setup():
 
     # Append energy network to aircraft 
     vehicle.append_energy_network(net)    
-    
+
     #------------------------------------------------------------------------------------------------------------------------- 
     # Compute Center of Gravity of aircraft (Optional)
     #------------------------------------------------------------------------------------------------------------------------- 
@@ -889,10 +813,9 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------- 
     # Done ! 
     #------------------------------------------------------------------------------------------------------------------------- 
-      
-    return vehicle 
+          
+    return vehicle
  
-
  
 if __name__ == '__main__': 
     main()    

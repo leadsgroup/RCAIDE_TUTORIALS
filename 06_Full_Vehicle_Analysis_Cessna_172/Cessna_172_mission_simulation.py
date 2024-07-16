@@ -6,7 +6,7 @@
 
 import RCAIDE
 from RCAIDE.Framework.Core                                     import Units  
-from RCAIDE.Library.Methods.Energy.Propulsors.Converters.Rotor import design_propeller 
+from RCAIDE.Library.Methods.Propulsors.Converters.Rotor        import design_propeller 
 from RCAIDE.Library.Plots                                      import *    
  
 import matplotlib.pyplot as plt
@@ -43,7 +43,6 @@ def main():
     
 def vehicle_setup(): 
     
-
     # ------------------------------------------------------------------
     #   Initialize the Vehicle
     # ------------------------------------------------------------------        
@@ -182,10 +181,8 @@ def vehicle_setup():
     #  Fuselage
     # ------------------------------------------------------------------
 
-    fuselage                                    = RCAIDE.Library.Components.Fuselages.Fuselage()
-    fuselage.tag                                = 'fuselage'
-    fuselage.number_coach_seats                 = 4.       
-    fuselage.tag                                = 'fuselage'    
+    fuselage                                    = RCAIDE.Library.Components.Fuselages.Tube_Fuselage() 
+    fuselage.number_coach_seats                 = 4.        
     fuselage.differential_pressure              = 8*Units.psi                    # Maximum differential pressure
     fuselage.width                              = 42.         * Units.inches     # Width of the fuselage
     fuselage.heights.maximum                    = 62. * Units.inches    # Height of the fuselage
@@ -225,7 +222,7 @@ def vehicle_setup():
     vehicle.landing_gear                        = landing_gear
 
     # ########################################################  Energy Network  #########################################################  
-    net                                         = RCAIDE.Framework.Networks.Internal_Combustion_Engine()   
+    net                                         = RCAIDE.Framework.Networks.Internal_Combustion_Engine_Network()   
 
     # add the network to the vehicle
     vehicle.append_energy_network(net) 
@@ -251,7 +248,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Propulsor
     #------------------------------------------------------------------------------------------------------------------------------------   
-    ice_prop                                   = RCAIDE.Energy.Propulsion.ICE_Propeller()     
+    ice_prop    = RCAIDE.Library.Components.Propulsors.ICE_Propeller()     
     ice_prop.active_fuel_tanks                 = ['fuel_tank']   
                                                      
     # Engine                     
@@ -276,9 +273,10 @@ def vehicle_setup():
     prop.variable_pitch                     = True  
     ospath                                  = os.path.abspath(__file__)
     separator                               = os.path.sep
-    rel_path                                = os.path.dirname(ospath) + separator + '..'+ separator 
+    rel_path                                = os.path.dirname(ospath) + separator  + '..'  + separator 
     airfoil                                 = RCAIDE.Library.Components.Airfoils.Airfoil()
-    airfoil.tag                             = 'NACA_4412' 
+    airfoil.tag                             = 'NACA_4412'
+    
     airfoil.coordinate_file                 =  rel_path + 'Airfoils' + separator + 'NACA_4412.txt'   # absolute path   
     airfoil.polar_files                     =[ rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_50000.txt',
                                                rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_100000.txt',
@@ -303,9 +301,8 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------ 
     #   Vehicle Definition Complete
     #------------------------------------------------------------------------------------------------------------------------------------ 
- 
-    
-    return vehicle
+
+    return vehicle 
   
 def configs_setup(vehicle):
     # ------------------------------------------------------------------
@@ -389,9 +386,7 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_x                       = True  
     segment.flight_dynamics.force_z                       = True     
     
-    # define flight controls 
-    segment.flight_controls.RPM.active                    = True           
-    segment.flight_controls.RPM.assigned_propulsors       = [['ice_propeller']] 
+    # define flight controls  
     segment.flight_controls.throttle.active               = True           
     segment.flight_controls.throttle.assigned_propulsors  = [['ice_propeller']] 
     segment.flight_controls.body_angle.active             = True                   
