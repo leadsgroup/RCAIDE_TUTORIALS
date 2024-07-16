@@ -228,7 +228,7 @@ def vehicle_setup():
     bat = RCAIDE.Library.Components.Energy.Batteries.Lithium_Ion_Generic() 
     bat.mass_properties.mass = 95.0 * Units.kg
     bat.specific_energy      = 800. * Units.Wh/Units.kg
-    bat.pack.maximum_voltage = 130.0
+    bat.pack.nominal_voltage = 130.0
     initialize_from_mass(bat) 
     bus.batteries.append(bat)                                
 

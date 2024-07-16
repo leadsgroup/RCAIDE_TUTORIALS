@@ -5,10 +5,10 @@
 # ----------------------------------------------------------------------
 import RCAIDE
 from RCAIDE.Framework.Core import Units 
-from RCAIDE.Library.Methods.Power.Battery.Sizing                      import initialize_from_mass 
+from RCAIDE.Library.Methods.Energy.Sources.Battery.Common             import initialize_from_mass 
 from RCAIDE.Library.Methods.Weights.Correlation_Buildups.Propulsion   import nasa_motor 
-from RCAIDE.Library.Methods.Energy.Propulsors.Converters.Rotor        import design_propeller 
-from RCAIDE.Library.Methods.Energy.Propulsors.Converters.DC_Motor     import design_motor 
+from RCAIDE.Library.Methods.Propulsors.Converters.Rotor               import design_propeller 
+from RCAIDE.Library.Methods.Propulsors.Converters.DC_Motor            import design_motor 
 from RCAIDE.Library.Plots  import *    
 
 import matplotlib.pyplot as plt
@@ -113,7 +113,7 @@ def vehicle_setup():
     bat.mass_properties.mass     = 0.17 * Units.kg
     bat.specific_energy          = 175.*Units.Wh/Units.kg
     bat.resistance               = 0.003
-    bat.pack.maximum_voltage     = 11.1
+    bat.pack.nominal_voltage     = 11.1
     initialize_from_mass(bat)
     bus.batteries.append(bat)     
     
@@ -166,7 +166,7 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------           
     motor                         = RCAIDE.Library.Components.Propulsors.Converters.DC_Motor() 
     motor.efficiency              = 0.9
-    motor.nominal_voltage         = bat.pack.maximum_voltage 
+    motor.nominal_voltage         = bat.pack.nominal_voltage 
     motor.origin                  = propeller.origin 
     motor.propeller_radius        = propeller.tip_radius 
     motor.no_load_current         = 0.01  
