@@ -56,7 +56,7 @@ def base(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Vortex_Lattice_Method()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.number_of_spanwise_vortices  = 5 
     aerodynamics.settings.number_of_chordwise_vortices = 1
@@ -66,7 +66,7 @@ def base(vehicle):
 
     # ------------------------------------------------------------------
     #  Stability Analysis
-    stability = RCAIDE.Framework.Analyses.Stability.Subsonic_VLM()
+    stability = RCAIDE.Framework.Analyses.Stability.Vortex_Lattice_Method()
     stability.geometry = vehicle
     analyses.append(stability)
 

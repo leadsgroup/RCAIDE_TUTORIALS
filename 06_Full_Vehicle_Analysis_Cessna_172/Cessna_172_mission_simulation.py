@@ -117,7 +117,7 @@ def vehicle_setup():
     slat.chord_fraction                         = 0.1      
     wing.append_control_surface(slat)  
     
-    RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform.wing_planform(wing) 
+    RCAIDE.Library.Methods.Geometry.Planform.wing_planform(wing) 
 
     # add to vehicle
     vehicle.append_component(wing)
@@ -387,9 +387,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls  
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['ice_propeller']] 
-    segment.flight_controls.body_angle.active             = True                   
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['ice_propeller']] 
+    segment.assigned_control_variables.body_angle.active             = True                   
     
     
     mission.append_segment(segment)
@@ -428,7 +428,7 @@ def base_analysis(vehicle):
     drag_area = 1.4*( total_wheel + total_strut)
     
     
-    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM() 
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Vortex_Lattice_Method() 
     aerodynamics.geometry                            = vehicle
     aerodynamics.settings.drag_coefficient_increment = 1.0*drag_area/vehicle.reference_area
     analyses.append(aerodynamics)

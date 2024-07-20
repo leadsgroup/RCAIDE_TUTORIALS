@@ -7,8 +7,8 @@ import RCAIDE
 from RCAIDE.Framework.Core import Units   
 from RCAIDE.Library.Methods.Propulsors.Turbofan_Propulsor          import design_turbofan
 from RCAIDE.Library.Methods.Stability.Center_of_Gravity            import compute_component_centers_of_gravity
-from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform      import segment_properties
-from RCAIDE.Library.Plots                 import *     
+from RCAIDE.Library.Methods.Geometry.Planform                      import segment_properties
+from RCAIDE.Library.Plots                                          import *     
 
 # python imports 
 import numpy as np  
@@ -99,8 +99,8 @@ def vehicle_setup():
     wing                                  = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag                              = 'main_wing' 
     wing.aspect_ratio                     = 10.18
-    wing.sweeps.quarter_chord             = 25 * Units.deg
-    wing.thickness_to_chord               = 0.1
+    wing.sweeps.quarter_chord             = 28.225 * Units.deg
+    wing.thickness_to_chord               = 0.08
     wing.taper                            = 0.1 
     wing.spans.projected                  = 34.32 
     wing.chords.root                      = 7.760 * Units.meter
@@ -129,7 +129,7 @@ def vehicle_setup():
     segment.percent_span_location         = 0.0
     segment.twist                         = 4. * Units.deg
     segment.root_chord_percent            = 1.
-    segment.thickness_to_chord            = 0.1
+    segment.thickness_to_chord            = 0.08
     segment.dihedral_outboard             = 2.5 * Units.degrees
     segment.sweeps.quarter_chord          = 28.225 * Units.degrees
     segment.thickness_to_chord            = .1
@@ -141,7 +141,7 @@ def vehicle_setup():
     segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'Yehudi'
     segment.percent_span_location         = 0.324
-    segment.twist                         = 0.047193 * Units.deg
+    segment.twist                         = wing.twists.root * (1 - segment.percent_span_location) * Units.deg
     segment.root_chord_percent            = 0.5
     segment.thickness_to_chord            = 0.1
     segment.dihedral_outboard             = 5.5 * Units.degrees
@@ -155,7 +155,7 @@ def vehicle_setup():
     segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'Section_2'
     segment.percent_span_location         = 0.963
-    segment.twist                         = 0.00258 * Units.deg
+    segment.twist                         = wing.twists.root *  (1 - segment.percent_span_location) * Units.deg
     segment.root_chord_percent            = 0.220
     segment.thickness_to_chord            = 0.1
     segment.dihedral_outboard             = 5.5 * Units.degrees
@@ -229,8 +229,8 @@ def vehicle_setup():
     wing.areas.reference         = 41.49
     wing.areas.exposed           = 59.354    # Exposed area of the horizontal tail
     wing.areas.wetted            = 71.81     # Wetted area of the horizontal tail
-    wing.twists.root             = 3.0 * Units.degrees
-    wing.twists.tip              = 3.0 * Units.degrees 
+    wing.twists.root             = 0.0 * Units.degrees
+    wing.twists.tip              = 0.0 * Units.degrees 
     wing.origin                  = [[33.02,0,1.466]]
     wing.aerodynamic_center      = [0,0,0] 
     wing.vertical                = False
@@ -754,6 +754,22 @@ def configs_setup(vehicle):
     config.Vref_VS_ratio = 1.23
     configs.append(config)   
       
+
+    # ------------------------------------------------------------------
+    #   Landing Configuration
+    # ------------------------------------------------------------------
+
+    config = RCAIDE.Library.Components.Configs.Config(base_config)
+    config.tag = 'reverse_thrust'
+    config.wings['main_wing'].control_surfaces.flap.deflection  = 30. * Units.deg
+    config.wings['main_wing'].control_surfaces.slat.deflection  = 25. * Units.deg
+    config.networks.turbofan_engine.reverse_thrust =  True 
+    config.networks.turbofan_engine.fuel_lines['fuel_line'].propulsors['starboard_propulsor'].fan.angular_velocity =  2030. * Units.rpm
+    config.networks.turbofan_engine.fuel_lines['fuel_line'].propulsors['port_propulsor'].fan.angular_velocity      =  2030. * Units.rpm
+    config.landing_gear.gear_condition                          = 'down'   
+    config.Vref_VS_ratio = 1.23
+    configs.append(config)   
+            
     
     return configs
 
@@ -791,7 +807,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Vortex_Lattice_Method()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.number_of_spanwise_vortices   = 25
     aerodynamics.settings.number_of_chordwise_vortices  = 5   
@@ -866,9 +882,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                      = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                 
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                 
     
     mission.append_segment(segment)
 
@@ -889,9 +905,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                      = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                  
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                  
     
     mission.append_segment(segment)
 
@@ -912,9 +928,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                      = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
 
@@ -935,9 +951,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
 
@@ -959,9 +975,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
 
@@ -982,9 +998,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
 
@@ -1005,9 +1021,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
 
@@ -1028,9 +1044,9 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
 
@@ -1042,7 +1058,7 @@ def mission_setup(analyses):
 
     segment = Segments.Descent.Constant_Speed_Constant_Rate(base_segment)
     segment.tag = "descent_5" 
-    segment.analyses.extend( analyses.cruise ) 
+    segment.analyses.extend( analyses.landing ) 
     segment.altitude_end                                  = 0.0   * Units.km
     segment.air_speed                                     = 145.0 * Units['m/s']
     segment.descent_rate                                  = 3.0   * Units['m/s']  
@@ -1052,11 +1068,12 @@ def mission_setup(analyses):
     segment.flight_dynamics.force_z                       = True     
     
     # define flight controls 
-    segment.flight_controls.throttle.active               = True           
-    segment.flight_controls.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
-    segment.flight_controls.body_angle.active             = True                
+    segment.assigned_control_variables.throttle.active               = True           
+    segment.assigned_control_variables.throttle.assigned_propulsors  = [['starboard_propulsor','port_propulsor']] 
+    segment.assigned_control_variables.body_angle.active             = True                
     
     mission.append_segment(segment)
+    
     # ------------------------------------------------------------------------------------------------------------------------------------ 
     #   Landing Roll
     # ------------------------------------------------------------------------------------------------------------------------------------ 
@@ -1064,12 +1081,13 @@ def mission_setup(analyses):
     segment = Segments.Ground.Landing(base_segment)
     segment.tag = "Landing"
 
-    segment.analyses.extend( analyses.landing ) 
+    segment.analyses.extend( analyses.reverse_thrust ) 
+    segment.velocity_start                                = 145.0 * Units['m/s']
     segment.velocity_end                                  = 10 * Units.knots 
     segment.friction_coefficient                          = 0.4
     segment.altitude                                      = 0.0   
-    segment.flight_controls.elapsed_time.active           = True  
-    segment.flight_controls.elapsed_time.initial_guess_values   = [[30.]]  
+    segment.assigned_control_variables.elapsed_time.active           = True  
+    segment.assigned_control_variables.elapsed_time.initial_guess_values  = [[30.]]  
     mission.append_segment(segment)     
 
 

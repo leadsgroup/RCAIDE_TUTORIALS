@@ -16,9 +16,9 @@ from RCAIDE.Methods.Propulsion                                                im
 from RCAIDE.Methods.Power.Battery.Sizing                                      import initialize_from_circuit_configuration  
 from RCAIDE.Methods.Propulsion.electric_motor_sizing                          import size_optimal_motor
 from RCAIDE.Methods.Weights.Correlations.Propulsion                           import nasa_motor
-from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform                         import segment_properties
+from RCAIDE.Library.Methods.Geometry.Planform                         import segment_properties
 from RCAIDE.Methods.Weights.Buildups.eVTOL.empty                              import empty  
-from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform.wing_segmented_planform import wing_segmented_planform
+from RCAIDE.Library.Methods.Geometry.Planform.wing_segmented_planform import wing_segmented_planform
 from RCAIDE.Methods.Weights.Buildups.eVTOL.converge_evtol_weight              import converge_evtol_weight  
 from RCAIDE.Methods.Center_of_Gravity.compute_component_centers_of_gravity    import compute_component_centers_of_gravity
  

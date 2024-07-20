@@ -9,7 +9,7 @@ import RCAIDE
 from RCAIDE.Library.Plots                                 import *    
 from RCAIDE.Framework.Core                                          import Units 
 from RCAIDE.Framework.Networks.Solar                         import Solar
-from RCAIDE.Library.Methods.Energy.Propulsors.Converters.Rotor    import design_propeller
+from RCAIDE.Library.Methods.Propulsors.Converters.Rotor    import design_propeller
 from RCAIDE.Methods.Energy.Sources.Battery.Sizing         import initialize_from_mass
 
 import matplotlib.pyplot as plt
@@ -344,7 +344,7 @@ def base_analysis(vehicle):
     
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Vortex_Lattice_Method()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.0000
     analyses.append(aerodynamics)
