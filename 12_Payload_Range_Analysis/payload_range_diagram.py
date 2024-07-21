@@ -10,9 +10,9 @@
 
 import RCAIDE 
 from RCAIDE.Framework.Core import Units
-from RCAIDE.Library.Methods.Energy.Propulsors.Turbofan_Propulsor   import design_turbofan  
+from RCAIDE.Library.Methods.Propulsors.Turbofan_Propulsor   import design_turbofan  
 from RCAIDE.Library.Methods.Performance       import payload_range
-from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform import wing_planform
+from RCAIDE.Library.Methods.Geometry.Planform import wing_planform
 from RCAIDE.Library.Plots  import *     
 import matplotlib.pyplot as plt
 
@@ -82,7 +82,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Subsonic_VLM()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Vortex_Lattice_Method()
     aerodynamics.geometry = vehicle
     aerodynamics.settings.drag_coefficient_increment = 0.000
     analyses.append(aerodynamics)

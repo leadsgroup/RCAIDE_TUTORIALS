@@ -12,7 +12,7 @@ import numpy as np
 import RCAIDE
 from RCAIDE.Framework.Core import Units
 from RCAIDE.Methods.Propulsion.turbofan_sizing import turbofan_sizing
-from RCAIDE.Library.Methods.Geometry.Two_Dimensional.Planform import wing_planform
+from RCAIDE.Library.Methods.Geometry.Planform import wing_planform
 
 from copy import deepcopy
 
