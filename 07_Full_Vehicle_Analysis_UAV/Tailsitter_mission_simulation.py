@@ -47,20 +47,14 @@ def main():
 # ----------------------------------------------------------------------
 
 def vehicle_setup():
-    
-    # ------------------------------------------------------------------
-    #   Initialize the Vehicle
-    # ------------------------------------------------------------------    
+     #------------------------------------------------------------------------------------------------------------------------------------
+    # ################################################# Vehicle-level Properties ########################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------     
+
     
     vehicle = RCAIDE.Vehicle()
     vehicle.tag = 'tail_sitter'
-
-    # ################################################# Vehicle-level Properties ########################################################  
-    
-    # ------------------------------------------------------------------
-    #   Vehicle-level Properties
-    # ------------------------------------------------------------------    
-    # mass properties
+ 
     vehicle.mass_properties.takeoff         = 0.82 * Units.kg
     vehicle.mass_properties.operating_empty = 0.82 * Units.kg
     vehicle.mass_properties.max_takeoff     = 0.82 * Units.kg
@@ -68,12 +62,13 @@ def vehicle_setup():
     # basic parameters
     vehicle.reference_area                  = 0.1668 
     
-    
-    # ##########################################################  Wings ################################################################    
-    
-    # ------------------------------------------------------------------        
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ######################################################## Wings ####################################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #   Main Wing
     # ------------------------------------------------------------------   
+
 
     wing = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
@@ -97,19 +92,21 @@ def vehicle_setup():
     # add to vehicle
     vehicle.append_component(wing)  
     
-    # ########################################################  Energy Network  #########################################################  
-    net                              = RCAIDE.Framework.Networks.All_Electric_Network()   
+  #------------------------------------------------------------------------------------------------------------------------------------
+    # ########################################################## Energy Network ######################################################### 
+    #------------------------------------------------------------------------------------------------------------------------------------ 
+    net                              = RCAIDE.Framework.Networks.Electric()   
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bus                              = RCAIDE.Library.Components.Energy.Distribution.Electrical_Bus()
+    bus                              = RCAIDE.Library.Components.Energy.Distributors.Electrical_Bus()
     bus.fixed_voltage                = False 
   
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Battery
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bat                          = RCAIDE.Library.Components.Energy.Batteries.Lithium_Ion_Generic()
+    bat                          = RCAIDE.Library.Components.Energy.Sources.Batteries.Lithium_Ion_Generic()
     bat.mass_properties.mass     = 0.17 * Units.kg
     bat.specific_energy          = 175.*Units.Wh/Units.kg
     bat.resistance               = 0.003
@@ -120,22 +117,22 @@ def vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Electronic Speed Controller    
     #------------------------------------------------------------------------------------------------------------------------------------  
-    esc_1            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
+    esc_1            = RCAIDE.Library.Components.Energy.Modulators.Electronic_Speed_Controller()
     esc_1.tag        = 'esc_1'
     esc_1.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_1)  
  
-    esc_2            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
+    esc_2            = RCAIDE.Library.Components.Energy.Modulators.Electronic_Speed_Controller()
     esc_2.tag        = 'esc_2'
     esc_2.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_2)    
 
-    esc_3            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
+    esc_3            = RCAIDE.Library.Components.Energy.Modulators.Electronic_Speed_Controller()
     esc_3.tag        = 'esc_3'
     esc_3.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_3)   
 
-    esc_4            = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
+    esc_4            = RCAIDE.Library.Components.Energy.Modulators.Electronic_Speed_Controller()
     esc_4.tag        = 'esc_4'
     esc_4.efficiency = 0.95 
     bus.electronic_speed_controllers.append(esc_4)   
@@ -247,7 +244,7 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #  Energy
     energy = RCAIDE.Framework.Analyses.Energy.Energy()
-    energy.networks = vehicle.networks
+    energy.vehicle  = vehicle 
     analyses.append(energy)
     
     # ------------------------------------------------------------------
@@ -273,9 +270,7 @@ def mission_setup(analyses):
     #   Initialize the Mission
     # ------------------------------------------------------------------
 
-    mission = RCAIDE.Framework.Mission.Sequential_Segments()
-    mission.tag = 'The Test Mission'
-
+    mission = RCAIDE.Framework.Mission.Sequential_Segments()  
     mission.atmosphere  = RCAIDE.Library.Attributes.Atmospheres.Earth.US_Standard_1976()
     mission.planet      = RCAIDE.Library.Attributes.Planets.Earth()
     
@@ -299,8 +294,7 @@ def mission_setup(analyses):
     segment.altitude_end                       = 100. * Units.m
     segment.climb_rate                         = 3.  * Units.m / Units.s 
     segment.air_speed                          = 3.  * Units.m / Units.s
-    segment.state.unknowns.body_angle          = ones_row(1) * 90. *Units.deg 
-    segment                                    = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    segment.state.unknowns.body_angle          = ones_row(1) * 90. *Units.deg  
     mission.append_segment(segment)   
     
     # ------------------------------------------------------------------    
@@ -310,8 +304,7 @@ def mission_setup(analyses):
     segment.tag                                                  = "Hover_1" 
     segment.analyses.extend(analyses.base) 
     segment.time                                                 = 60* Units.seconds
-    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1) * 90.*Units.deg  
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1) * 90.*Units.deg    
     mission.append_segment(segment)    
     
     # ------------------------------------------------------------------    
@@ -324,8 +317,7 @@ def mission_setup(analyses):
     segment.acceleration      = 1.5 * Units['m/s/s']
     segment.air_speed_start   = 0.0
     segment.air_speed_end     = 15.0 
-    segment.altitude          = 100. * Units.m 
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
+    segment.altitude          = 100. * Units.m  
     mission.append_segment(segment)   
 
     # ------------------------------------------------------------------    
@@ -336,9 +328,7 @@ def mission_setup(analyses):
     segment.analyses.extend(analyses.base) 
     segment.distance                        = 3.  * Units.km
     segment.air_speed                       = 15. * Units.m/Units.s
-    segment.altitude                        = 100. * Units.m 
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
-
+    segment.altitude                        = 100. * Units.m   
     mission.append_segment(segment)            
     
     # ------------------------------------------------------------------    
@@ -350,8 +340,7 @@ def mission_setup(analyses):
     segment.analyses.extend(analyses.base) 
     segment.acceleration                    = -0.5 * Units['m/s/s'] 
     segment.air_speed_end                   = 0.0 
-    segment.altitude                        = 100. * Units.m 
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
+    segment.altitude                        = 100. * Units.m  
     
     mission.append_segment(segment)  
     
@@ -362,9 +351,7 @@ def mission_setup(analyses):
     segment.tag                                                  = "Hover_2" 
     segment.analyses.extend(analyses.base)                      
     segment.time                                                 = 60* Units.seconds
-    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)  
-    
+    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg  
     mission.append_segment(segment)        
     
     # ------------------------------------------------------------------    
@@ -375,8 +362,7 @@ def mission_setup(analyses):
     segment.analyses.extend(analyses.base) 
     segment.altitude_end = 0. * Units.m
     segment.descent_rate = 3. * Units.m / Units.s   
-    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg 
-    segment = analyses.base.energy.networks.all_electric.add_unknowns_and_residuals_to_segment(segment)   
+    segment.state.conditions.frames.body.inertial_rotations[:,1] = ones_row(1)* 90.*Units.deg  
     mission.append_segment(segment)       
     
     #------------------------------------------------------------------    

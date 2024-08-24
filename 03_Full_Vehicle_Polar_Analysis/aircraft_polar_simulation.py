@@ -415,16 +415,13 @@ def subsonic_control_surface_test(control_surface_deflection_angles):
 #   Define the Vehicle
 # ----------------------------------------------------------------------
 
-def Boeing_737_vehicle_setup(): 
-    
-    # ------------------------------------------------------------------
-    #   Initialize the Vehicle
-    # ------------------------------------------------------------------    
+def Boeing_737_vehicle_setup():  
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ################################################# Vehicle-level Properties ########################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------
     
     vehicle = RCAIDE.Vehicle()
     vehicle.tag = 'Boeing_737-800'    
-    
-    # ################################################# Vehicle-level Properties #################################################   
     vehicle.mass_properties.max_takeoff               = 79015.8 * Units.kilogram  
     vehicle.mass_properties.takeoff                   = 79015.8 * Units.kilogram    
     vehicle.mass_properties.operating_empty           = 62746.4 * Units.kilogram  
@@ -436,11 +433,10 @@ def Boeing_737_vehicle_setup():
     vehicle.passengers                                = 170
     vehicle.systems.control                           = "fully powered" 
     vehicle.systems.accessories                       = "medium range"
-
-    # ################################################# Landing Gear #############################################################   
-    # ------------------------------------------------------------------        
-    #  Landing Gear
-    # ------------------------------------------------------------------  
+ 
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ##################################################### Landing Gear ################################################################    
+    #------------------------------------------------------------------------------------------------------------------------------------
     landing_gear                    = RCAIDE.Library.Components.Landing_Gear.Landing_Gear()
     landing_gear.tag                = "main_landing_gear" 
     landing_gear.main_tire_diameter = 1.12000 * Units.m
@@ -453,7 +449,9 @@ def Boeing_737_vehicle_setup():
     landing_gear.nose_wheels        = 2    # Number of wheels on the nose landing gear      
     vehicle.landing_gear            = landing_gear
 
-    # ################################################# Wings ##################################################################### 
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ######################################################## Wings ####################################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------
     #   Main Wing
     # ------------------------------------------------------------------
@@ -484,7 +482,7 @@ def Boeing_737_vehicle_setup():
     root_airfoil                          = RCAIDE.Library.Components.Airfoils.Airfoil()
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
-    rel_path                              = os.path.dirname(ospath) + separator  + '..'  + separator  
+    rel_path                              = os.path.dirname(ospath) + separator + '..' + separator  
     root_airfoil.coordinate_file          = rel_path  + 'Airfoils' + separator + 'B737a.txt'
     segment                               = RCAIDE.Library.Components.Wings.Segment()
     segment.tag                           = 'Root'
@@ -543,14 +541,14 @@ def Boeing_737_vehicle_setup():
     # Fill out more segment properties automatically
     wing = segment_properties(wing)    
 
-    ## control surfaces -------------------------------------------
-    #slat                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Slat()
-    #slat.tag                      = 'slat'
-    #slat.span_fraction_start      = 0.2
-    #slat.span_fraction_end        = 0.963
-    #slat.deflection               = 0.0 * Units.degrees
-    #slat.chord_fraction           = 0.075
-    #wing.append_control_surface(slat)
+    # control surfaces -------------------------------------------
+    slat                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Slat()
+    slat.tag                      = 'slat'
+    slat.span_fraction_start      = 0.2
+    slat.span_fraction_end        = 0.963
+    slat.deflection               = 0.0 * Units.degrees
+    slat.chord_fraction           = 0.075
+    wing.append_control_surface(slat)
 
     flap                          = RCAIDE.Library.Components.Wings.Control_Surfaces.Flap()
     flap.tag                      = 'flap'
@@ -710,7 +708,9 @@ def Boeing_737_vehicle_setup():
     # add to vehicle
     vehicle.append_component(wing)
 
-    # ################################################# Fuselage ################################################################ 
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ##########################################################  Fuselage ############################################################## 
+    #------------------------------------------------------------------------------------------------------------------------------------ 
     
     fuselage                                    = RCAIDE.Library.Components.Fuselages.Tube_Fuselage() 
     fuselage.number_coach_seats                 = vehicle.passengers 
@@ -873,21 +873,16 @@ def Boeing_737_vehicle_setup():
     vehicle.append_component(fuselage)
      
 
-    # ################################################# Energy Network #######################################################         
-    # Step 1: Define network
-    # Step 2: Define Distribution Type
-    # Step 3: Define Propulsors 
-    # Step 4: Define Enegy Source 
-
-    #------------------------------------------------------------------------------------------------------------------------- 
-    #  Turbofan Network
-    #-------------------------------------------------------------------------------------------------------------------------   
-    net                                         = RCAIDE.Framework.Networks.Turbofan_Engine_Network() 
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ##################################################### Energy Network ##############################################################    
+    #------------------------------------------------------------------------------------------------------------------------------------ 
+    #initialize the fuel network
+    net                                         = RCAIDE.Framework.Networks.Fuel() 
     
     #------------------------------------------------------------------------------------------------------------------------- 
     # Fuel Distrubition Line 
     #------------------------------------------------------------------------------------------------------------------------- 
-    fuel_line                                   = RCAIDE.Library.Components.Energy.Distribution.Fuel_Line()  
+    fuel_line                                   = RCAIDE.Library.Components.Energy.Distributors.Fuel_Line()  
     
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Propulsor: Starboard Propulsor
@@ -1011,7 +1006,7 @@ def Boeing_737_vehicle_setup():
     #  Energy Source: Fuel Tank
     #------------------------------------------------------------------------------------------------------------------------- 
     # fuel tank
-    fuel_tank                                   = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                   = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.origin                            = wing.origin 
     
     # append fuel 
@@ -1030,7 +1025,7 @@ def Boeing_737_vehicle_setup():
 
     # Append energy network to aircraft 
     vehicle.append_energy_network(net)    
-
+    
     #------------------------------------------------------------------------------------------------------------------------- 
     # Compute Center of Gravity of aircraft (Optional)
     #------------------------------------------------------------------------------------------------------------------------- 
@@ -1041,23 +1036,17 @@ def Boeing_737_vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------- 
     # Done ! 
     #------------------------------------------------------------------------------------------------------------------------- 
-          
+      
     return vehicle
- 
+  
 def Concorde_vehicle_setup():
-
-    # ------------------------------------------------------------------
-    #   Initialize the Vehicle
-    # ------------------------------------------------------------------    
-    
+ 
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ################################################# Vehicle-level Properties ########################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------
     vehicle = RCAIDE.Vehicle()
-    vehicle.tag = 'Concorde'    
+    vehicle.tag = 'Concorde'
     
-    
-    # ------------------------------------------------------------------
-    #   Vehicle-level Properties
-    # ------------------------------------------------------------------    
-
     # mass properties
     vehicle.mass_properties.max_takeoff               = 185000.   # kg
     vehicle.mass_properties.operating_empty           = 78700.   # kg
@@ -1080,9 +1069,12 @@ def Concorde_vehicle_setup():
     vehicle.design_range                 = 4505 * Units.miles
     vehicle.design_cruise_alt            = 60000.0 * Units.ft
     
-    # ------------------------------------------------------------------        
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ######################################################## Wings ####################################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
     #   Main Wing
-    # ------------------------------------------------------------------        
+    # ------------------------------------------------------------------     
     
     wing = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag = 'main_wing'
@@ -1121,7 +1113,7 @@ def Concorde_vehicle_setup():
     wing_airfoil                   = RCAIDE.Library.Components.Airfoils.Airfoil()  
     ospath                         = os.path.abspath(__file__)
     separator                      = os.path.sep
-    rel_path                       = os.path.dirname(ospath) + separator + '..' + separator   
+    rel_path                       = os.path.dirname(ospath) + separator + '..' + separator    
     wing_airfoil.coordinate_file   = rel_path + 'Airfoils' + separator + 'NACA65_203.txt' 
     wing.append_airfoil(wing_airfoil)  
     
@@ -1384,33 +1376,34 @@ def Concorde_vehicle_setup():
     
     vehicle.append_component(fuselage)
 
-    #------------------------------------------------------------------------------------------------------------------------------------  
-    #  Turbofan Network
-    #------------------------------------------------------------------------------------------------------------------------------------  
-    net                                            = RCAIDE.Framework.Networks.Turbojet_Engine_Network() 
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ########################################################## Energy Network ######################################################### 
+    #------------------------------------------------------------------------------------------------------------------------------------ 
+    #initialize the fuel network
+    net                                            = RCAIDE.Framework.Networks.Fuel() 
     
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Fuel Distrubition Line 
     #------------------------------------------------------------------------------------------------------------------------------------  
-    fuel_line                                     = RCAIDE.Library.Components.Energy.Distribution.Fuel_Line() 
-    fuel_line.identical_propulsors                = False # only for regression 
+    fuel_line                                     = RCAIDE.Library.Components.Energy.Distributors.Fuel_Line() 
+    fuel_line.identical_propulsors                = False # for regression 
     
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Inner Right Propulsor
     #------------------------------------------------------------------------------------------------------------------------------------   
-    outer_right_turbojet                              = RCAIDE.Library.Components.Propulsors.Turbojet()  
-    outer_right_turbojet.tag                          = 'outer_right_turbojet'   
-    outer_right_turbojet.active_fuel_tanks            = ['tank_6_and_7','tank_5A_and_7A','tank_2_and_3','tank_11']    
-    outer_right_turbojet.engine_length                = 4.039
-    outer_right_turbojet.nacelle_diameter             = 1.3
-    outer_right_turbojet.inlet_diameter               = 1.212 
-    outer_right_turbojet.areas.wetted                 = 30
-    outer_right_turbojet.design_altitude              = 60000.0*Units.ft
-    outer_right_turbojet.design_mach_number           = 2.02
-    outer_right_turbojet.design_thrust                = 40000. * Units.lbf  
-    outer_right_turbojet.origin                       = [[37.,5.5,-1.6]] 
-    outer_right_turbojet.working_fluid                = RCAIDE.Library.Attributes.Gases.Air()
+    outer_right_turbojet                          = RCAIDE.Library.Components.Propulsors.Turbojet()  
+    outer_right_turbojet.tag                      = 'outer_right_turbojet'   
+    outer_right_turbojet.active_fuel_tanks        = ['tank_6_and_7','tank_5A_and_7A','tank_2_and_3','tank_11']    
+    outer_right_turbojet.engine_length            = 4.039
+    outer_right_turbojet.nacelle_diameter         = 1.3
+    outer_right_turbojet.inlet_diameter           = 1.212 
+    outer_right_turbojet.areas.wetted             = 30
+    outer_right_turbojet.design_altitude          = 60000.0*Units.ft
+    outer_right_turbojet.design_mach_number       = 2.02
+    outer_right_turbojet.design_thrust            = 10000. * Units.lbf  
+    outer_right_turbojet.origin                   = [[37.,5.5,-1.6]] 
+    outer_right_turbojet.working_fluid            = RCAIDE.Library.Attributes.Gases.Air()
     
     # Ram  
     ram                                           = RCAIDE.Library.Components.Propulsors.Converters.Ram()
@@ -1488,7 +1481,6 @@ def Concorde_vehicle_setup():
     nacelle.tag                                 = 'nacelle_1'
     nacelle.origin                              = [[37.,5.5,-1.6]] 
     nacelle.length                              = 10
-    nacelle.has_pylon                           =  False 
     nacelle.inlet_diameter                      = 1.1 
     nacelle.areas.wetted                        = 30.
     
@@ -1507,11 +1499,8 @@ def Concorde_vehicle_setup():
     nac_segment.height                          = 1.5
     nac_segment.width                           = 1.5
     nac_segment.curvature                       = 5
-    nacelle.append_segment(nac_segment)     
-    
-    outer_right_turbojet.nacelle = nacelle 
-    
-    # append turbojet    
+    nacelle.append_segment(nac_segment)      
+    outer_right_turbojet.nacelle = nacelle  
     fuel_line.propulsors.append(outer_right_turbojet) 
 
     #------------------------------------------------------------------------------------------------------------------------------------  
@@ -1524,8 +1513,7 @@ def Concorde_vehicle_setup():
     nacelle_2                                = deepcopy(nacelle)
     nacelle_2.tag                            = 'nacelle_2'
     nacelle_2.origin                         = [[37.,4,-1.6]]
-    inner_right_turbojet.nacelle = nacelle_2
-   
+    inner_right_turbojet.nacelle = nacelle_2 
     fuel_line.propulsors.append(inner_right_turbojet) 
 
     #------------------------------------------------------------------------------------------------------------------------------------  
@@ -1538,8 +1526,7 @@ def Concorde_vehicle_setup():
     nacelle_3                               = deepcopy(nacelle)
     nacelle_3.tag                           = 'nacelle_3'
     nacelle_3.origin                        = [[37.,-4,-1.6]]
-    inner_left_turbojet.nacelle = nacelle_3
-
+    inner_left_turbojet.nacelle = nacelle_3 
     fuel_line.propulsors.append(inner_left_turbojet) 
 
     #------------------------------------------------------------------------------------------------------------------------------------  
@@ -1554,12 +1541,11 @@ def Concorde_vehicle_setup():
     nacelle_4.origin                        = [[37.,-5.5,-1.6]]
     outer_left_turbojet.nacelle = nacelle_4
     fuel_line.propulsors.append(outer_left_turbojet) 
-
-       
+ 
     #------------------------------------------------------------------------------------------------------------------------------------  
     #  Fuel Tank & Fuel
     #------------------------------------------------------------------------------------------------------------------------------------   
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_9'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[26.5,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 11096
@@ -1567,7 +1553,7 @@ def Concorde_vehicle_setup():
     fuel_tank.fuel                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_10'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[28.7,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 11943
@@ -1575,7 +1561,7 @@ def Concorde_vehicle_setup():
     fuel_tank.fuel                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_1_and_4'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[31.0,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 4198+4198
@@ -1583,23 +1569,23 @@ def Concorde_vehicle_setup():
     fuel_tank.fuel                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_5_and_8'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[32.9,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 7200+12838
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel                              = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_6_and_7'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[37.4,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 11587+7405
     fuel_tank.fuel_selector_ratio                  = 1/8
-    fuel_tank.fuel                            = RCAIDE.Library.Attributes.Propellants.Jet_A() 
+    fuel_tank.fuel                                 = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_5A_and_7A'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[40.2,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 2225+2225
@@ -1607,7 +1593,7 @@ def Concorde_vehicle_setup():
     fuel_tank.fuel                                 = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank) 
     
-    fuel_tank                                      = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank                                      = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_2_and_3'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[40.2,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 4570+4570
@@ -1615,7 +1601,7 @@ def Concorde_vehicle_setup():
     fuel_tank.fuel                                 = RCAIDE.Library.Attributes.Propellants.Jet_A() 
     fuel_line.fuel_tanks.append(fuel_tank)  
  
-    fuel_tank = RCAIDE.Library.Components.Energy.Fuel_Tanks.Fuel_Tank()
+    fuel_tank = RCAIDE.Library.Components.Energy.Sources.Fuel_Tanks.Fuel_Tank()
     fuel_tank.tag                                  = 'tank_11'
     fuel_tank.mass_properties.center_of_gravity    = np.array([[49.8,0,0]])
     fuel_tank.mass_properties.fuel_mass_when_full  = 10415
@@ -1629,6 +1615,7 @@ def Concorde_vehicle_setup():
     #------------------------------------------------------------------------------------------------------------------------------------          
     # Append energy network to aircraft 
     vehicle.append_energy_network(net)     
+
 
     return vehicle 
  

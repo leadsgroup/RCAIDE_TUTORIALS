@@ -32,7 +32,7 @@ def main():
     airfoil_file       = '2410'
     
     # we are going to use the built-in geometry generator 
-    airfoil_geometry   = compute_naca_4series(airfoil_file,npoints = 50)
+    airfoil_geometry   = compute_naca_4series(airfoil_file,npoints = 51)
     
     # compute airfoil properties using panel code 
     airfoil_properties = airfoil_analysis(airfoil_geometry,AoA_vals,Re_vals)  

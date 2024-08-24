@@ -5,12 +5,12 @@
 #----------------------------------------------------------------------
 #   Imports
 # ----------------------------------------------------------------------
-import RCAIDE 
-from RCAIDE.Library.Plots                                 import *    
-from RCAIDE.Framework.Core                                          import Units 
+import RCAIDE
+from RCAIDE.Library.Plots                                    import *    
+from RCAIDE.Framework.Core                                   import Units 
 from RCAIDE.Framework.Networks.Solar                         import Solar
-from RCAIDE.Library.Methods.Propulsors.Converters.Rotor    import design_propeller
-from RCAIDE.Methods.Energy.Sources.Battery.Sizing         import initialize_from_mass
+from RCAIDE.Library.Methods.Propulsors.Converters.Rotor      import design_propeller
+from RCAIDE.Library.Methods.Energy.Sources.Batteries.Common  import initialize_from_mass
 
 import matplotlib.pyplot as plt
 import numpy as np 
@@ -338,7 +338,7 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #  Weights
     weights = RCAIDE.Framework.Analyses.Weights.Weights_UAV()
-    weights.settings.empty = RCAIDE.Methods.Weights.Correlations.UAV.empty
+    weights.settings.empty = RCAIDE.Library.Methods.Weights.Correlation_Buildups.UAV.empty
     weights.vehicle = vehicle
     analyses.append(weights)
     
@@ -352,7 +352,7 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #  Energy
     energy = RCAIDE.Framework.Analyses.Energy.Energy()
-    energy.networks = vehicle.networks #what is called throughout the mission (at every time step))
+    energy.vehicle  = vehicle 
     analyses.append(energy)
     
     # ------------------------------------------------------------------
