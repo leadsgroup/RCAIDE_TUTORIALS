@@ -252,7 +252,7 @@ def vehicle_setup():
     # ------------------------------------------------------------------    
     
     # build network
-    net                                         = RCAIDE.Framework.Networks.Internal_Combustion_Propeller()
+    net                                         = RCAIDE.Framework.Networks.Fuel()
     net.tag                                     = 'internal_combustion'
     net.number_of_engines                       = 1.
     net.identical_propellers                    = True

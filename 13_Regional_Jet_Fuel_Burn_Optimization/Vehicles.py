@@ -229,7 +229,7 @@ def base_setup():
     # ------------------------------------------------------------------    
 
     #initialize the gas turbine network
-    gt_engine                   = RCAIDE.Framework.Networks.Turbofan_Engine_Network()
+    gt_engine                   = RCAIDE.Framework.Networks.Fuel()
     gt_engine.tag               = 'turbofan'
     gt_engine.origin            = [[12.0,4.38,-2.1],[12.0,-4.38,-2.1]]
     gt_engine.number_of_engines = 2.0

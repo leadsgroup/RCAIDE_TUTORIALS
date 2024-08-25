@@ -5,12 +5,11 @@
 # ----------------------------------------------------------------------
 # RCAIDE imports 
 import RCAIDE 
-from RCAIDE.Framework.Core import Units  
-from RCAIDE.Framework.Networks.All_Electric_Network                 import All_Electric_Network
+from RCAIDE.Framework.Core import Units   
 from RCAIDE.Library.Methods.Propulsors.Converters.Rotor             import design_propeller 
 from RCAIDE.Library.Methods.Propulsors.Converters.DC_Motor          import design_motor 
 from RCAIDE.Library.Methods.Weights.Correlation_Buildups.Propulsion import nasa_motor
-from RCAIDE.Library.Methods.Energy.Sources.Battery.Common           import initialize_from_circuit_configuration
+from RCAIDE.Library.Methods.Energy.Sources.Batteries.Common         import initialize_from_circuit_configuration
 from RCAIDE.Library.Methods.Geometry.Planform                       import wing_segmented_planform  
 from RCAIDE.Library.Plots                                           import *     
 
@@ -54,21 +53,19 @@ def main():
            
     return 
 
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 #   Build the Vehicle
 # ----------------------------------------------------------------------------------------------------------------------
-def vehicle_setup():  
+def vehicle_setup():
+    
     #------------------------------------------------------------------------------------------------------------------------------------
-    #   Initialize the Vehicle
+    # ################################################# Vehicle-level Properties ########################################################  
     #------------------------------------------------------------------------------------------------------------------------------------
 
     vehicle = RCAIDE.Vehicle()
-    vehicle.tag = 'X57_Maxwell_Mod2'
-
- 
-    # ################################################# Vehicle-level Properties ########################################################  
-
-    # mass properties
+    vehicle.tag = 'X57_Maxwell_Mod2' 
     vehicle.mass_properties.max_takeoff   = 2550. * Units.pounds
     vehicle.mass_properties.takeoff       = 2550. * Units.pounds
     vehicle.mass_properties.max_zero_fuel = 2550. * Units.pounds 
@@ -89,10 +86,13 @@ def vehicle_setup():
     vehicle.design_mach_number            =  mach_number
 
          
-    # ##########################################################  Wings ################################################################    
-    #------------------------------------------------------------------------------------------------------------------------------------  
-    #  Main Wing
     #------------------------------------------------------------------------------------------------------------------------------------
+    # ######################################################## Wings ####################################################################  
+    #------------------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    #   Main Wing
+    # ------------------------------------------------------------------
+    
     wing                                  = RCAIDE.Library.Components.Wings.Main_Wing()
     wing.tag                              = 'main_wing' 
     wing.sweeps.quarter_chord             = 0.0 * Units.deg
@@ -115,13 +115,13 @@ def vehicle_setup():
     wing.dynamic_pressure_ratio           = 1.0  
     ospath                                = os.path.abspath(__file__)
     separator                             = os.path.sep
-    rel_path                              = os.path.dirname(ospath) + separator + '..' + separator 
+    rel_path                              = os.path.dirname(ospath) + separator  + '..'  + separator  
     airfoil                               = RCAIDE.Library.Components.Airfoils.Airfoil()
     airfoil.tag                           = 'NACA_63_412.txt' 
     airfoil.coordinate_file               = rel_path + 'Airfoils' + separator + 'NACA_63_412.txt'   # absolute path     
     cg_x                                  = wing.origin[0][0] + 0.25*wing.chords.mean_aerodynamic
     cg_z                                  = wing.origin[0][2] - 0.2*wing.chords.mean_aerodynamic
-    vehicle.mass_properties.center_of_gravity = [[cg_x,   0.  ,  cg_z ]]  # SOURCE: Design and aerodynamic analysis of a twin-engine commuter aircraft
+    vehicle.mass_properties.center_of_gravity = [[cg_x,   0.  ,  cg_z ]]  
 
     # Wing Segments
     segment                               = RCAIDE.Library.Components.Wings.Segment()
@@ -365,19 +365,21 @@ def vehicle_setup():
     # add to vehicle
     vehicle.append_component(fuselage)
  
-    # ########################################################  Energy Network  #########################################################  
-    net                              = All_Electric_Network()   
+    #------------------------------------------------------------------------------------------------------------------------------------  
+    #  Electric Network
+    #------------------------------------------------------------------------------------------------------------------------------------  
+    #initialize the electric network
+    net                              = RCAIDE.Framework.Networks.Electric()   
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Bus
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bus                              = RCAIDE.Library.Components.Energy.Distribution.Electrical_Bus() 
-    bus.identical_propulsors         = False # only for regression 
+    bus                              = RCAIDE.Library.Components.Energy.Distributors.Electrical_Bus() 
 
     #------------------------------------------------------------------------------------------------------------------------------------           
     # Battery
     #------------------------------------------------------------------------------------------------------------------------------------  
-    bat                                                    = RCAIDE.Library.Components.Energy.Batteries.Lithium_Ion_NMC()
+    bat                                                    = RCAIDE.Library.Components.Energy.Sources.Batteries.Lithium_Ion_NMC()
     bat.tag                                                = 'li_ion_battery'
     bat.pack.electrical_configuration.series               = 140   
     bat.pack.electrical_configuration.parallel             = 100
@@ -400,7 +402,7 @@ def vehicle_setup():
     starboard_propulsor.active_batteries             = ['li_ion_battery']   
   
     # Electronic Speed Controller       
-    esc                                              = RCAIDE.Library.Components.Propulsors.Modulators.Electronic_Speed_Controller()
+    esc                                              = RCAIDE.Library.Components.Energy.Modulators.Electronic_Speed_Controller()
     esc.tag                                          = 'esc_1'
     esc.efficiency                                   = 0.95 
     starboard_propulsor.electronic_speed_controller  = esc   
@@ -429,7 +431,7 @@ def vehicle_setup():
                                                         rel_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_1000000.txt']   
     propeller.append_airfoil(airfoil)                       
     propeller.airfoil_polar_stations                 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
-    propeller                                        = design_propeller(propeller)    
+    design_propeller(propeller)    
     starboard_propulsor.rotor                        = propeller   
               
     # DC_Motor       
@@ -441,7 +443,7 @@ def vehicle_setup():
     motor.rotor_radius                               = propeller.tip_radius
     motor.design_torque                              = propeller.cruise.design_torque
     motor.angular_velocity                           = propeller.cruise.design_angular_velocity 
-    motor                                            = design_motor(motor)  
+    design_motor(motor)  
     motor.mass_properties.mass                       = nasa_motor(motor.design_torque) 
     starboard_propulsor.motor                        = motor 
  
@@ -564,8 +566,8 @@ def vehicle_setup():
     #   Vehicle Definition Complete
     # ------------------------------------------------------------------
     
-    return vehicle
-
+    return vehicle 
+ 
 # ---------------------------------------------------------------------
 #   Define the Configurations
 # ---------------------------------------------------------------------
@@ -622,7 +624,7 @@ def base_analysis(vehicle):
     # ------------------------------------------------------------------
     #  Energy
     energy= RCAIDE.Framework.Analyses.Energy.Energy()
-    energy.networks= vehicle.networks 
+    energy.vehicle =  vehicle  
     analyses.append(energy)
 
     # ------------------------------------------------------------------
