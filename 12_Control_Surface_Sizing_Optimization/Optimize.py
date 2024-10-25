@@ -5,14 +5,18 @@
 # ----------------------------------------------------------------------  
 import RCAIDE
 from RCAIDE.Framework.Core import Units, Data 
+from RCAIDE.Framework.Optimization.Packages.scipy import scipy_setup
+from RCAIDE.Framework.Optimization.Common   import Nexus
+
+# python imports 
 import numpy as np
+import time
+
+# local imports 
 import Vehicles
 import Missions
 import Procedure
-import RCAIDE.Optimization.Package_Setups.scipy_setup as scipy_setup
-import matplotlib.pyplot as plt
-from RCAIDE.Optimization       import Nexus     
-import time 
+import matplotlib.pyplot as plt 
 # ----------------------------------------------------------------------        
 #   Run the whole thing
 # ----------------------------------------------------------------------  
