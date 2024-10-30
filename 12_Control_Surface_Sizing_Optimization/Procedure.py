@@ -111,17 +111,18 @@ def longitudinal_static_stability_and_drag_post_process(nexus):
                                      
                                  
     run_conditions                                          = Results()
-    run_conditions.freestream.density                       = np.array([[atmo_data.density[0,0]]])
-    run_conditions.freestream.gravity                       = np.array([[g]])           
-    run_conditions.freestream.speed_of_sound                = np.array([[atmo_data.speed_of_sound[0,0]]])  
-    run_conditions.freestream.velocity                      = np.array([[nexus.missions['stick_fixed_cruise'].segments['cruise'].air_speed]])
+    run_conditions.expand_rows(2)
+    run_conditions.freestream.density[:,0]                  = atmo_data.density[0,0]
+    run_conditions.freestream.gravity[:,0]                  = g          
+    run_conditions.freestream.speed_of_sound[:,0]           = atmo_data.speed_of_sound[0,0] 
+    run_conditions.freestream.velocity[:,0]                 = nexus.missions['stick_fixed_cruise'].segments['cruise'].air_speed 
     run_conditions.freestream.mach_number                   = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     run_conditions.freestream.dynamic_pressure              = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2)
-    run_conditions.aerodynamics.angles.beta                 = np.array([[0.0]])
-    run_conditions.aerodynamics.angles.alpha                = np.array([[0.0]])
-    run_conditions.aerodynamics.coefficients.lift.total     = L/(S*(0.5*run_conditions.freestream.density*(run_conditions.freestream.velocity**2))) 
-    run_conditions.static_stability.coefficients.roll       = np.array([[0.0]])
-    run_conditions.static_stability.coefficients.pitch      = np.array([[0.0]])
+    run_conditions.aerodynamics.angles.beta[:,0]            = 0.0 
+    run_conditions.aerodynamics.angles.alpha[:,0]           = 0.0 
+    run_conditions.aerodynamics.coefficients.lift.total     = np.array([[L, L*1.01]]).T /(S*(0.5*run_conditions.freestream.density*(run_conditions.freestream.velocity**2))) 
+    run_conditions.static_stability.coefficients.roll[:,0]  =  0.0
+    run_conditions.static_stability.coefficients.pitch[:,0] =  0.0
     stability_stick_fixed                                   = RCAIDE.Framework.Analyses.Stability.Athena_Vortex_Lattice() 
     stability_stick_fixed.settings.filenames.avl_bin_name   = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' 
     stability_stick_fixed.settings.trim_aircraft            = True
@@ -200,7 +201,7 @@ def elevator_sizing_post_process(nexus):
     run_conditions.freestream.speed_of_sound           =  np.array([[atmo_data.speed_of_sound[0,0]]]) 
     run_conditions.freestream.dynamic_pressure         = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2)    
     run_conditions.aerodynamics.angles.beta            =  np.array([[0.0]])
-    run_conditions.aerodynamics.angles.alpha           = np.array([[0.0]])
+    run_conditions.aerodynamics.angles.alpha           =  np.array([[0.0]])
     run_conditions.static_stability.coefficients.roll  =  np.array([[0.0]])
     run_conditions.static_stability.coefficients.pitch =  np.array([[0.0]]) 
     
@@ -211,14 +212,14 @@ def elevator_sizing_post_process(nexus):
     stability_pull_maneuver                                      = RCAIDE.Framework.Analyses.Stability.Athena_Vortex_Lattice() 
     stability_pull_maneuver.settings.filenames.avl_bin_name      = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35'
     stability_pull_maneuver.settings.trim_aircraft               = True
-    run_conditions.aerodynamics.coefficients.lift.total          =  np.array([[CL_pull_man]])
+    run_conditions.aerodynamics.coefficients.lift.total          = CL_pull_man
     run_conditions.freestream.velocity                           =  np.array([[V_max]])
     run_conditions.freestream.mach_number                        = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     stability_pull_maneuver.settings.number_of_spanwise_vortices = 40
     stability_pull_maneuver.vehicle                              = vehicle
     run_AVL_analysis(stability_pull_maneuver,run_conditions)
-    AoA_pull                                                     = run_conditions.aerodynamics.AoA[0,0]
-    elevator_pull_deflection                                     = run_conditions.stability.static.control_surfaces_cases['case_0001_0001'].control_surfaces.elevator.deflection
+    AoA_pull                                                     = run_conditions.aerodynamics.angles.alpha[0,0]
+    elevator_pull_deflection                                     = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.elevator.deflection
 
 
     run_conditions                                               = Results()
@@ -232,15 +233,15 @@ def elevator_sizing_post_process(nexus):
     run_conditions.static_stability.coefficients.pitch           = np.array([[0.0 ]])  
     stability_push_maneuver                                      = RCAIDE.Framework.Analyses.Stability.Athena_Vortex_Lattice() 
     stability_push_maneuver.settings.filenames.avl_bin_name      =  '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35'
-    stability_pull_maneuver.settings.trim_aircraft               = True
-    run_conditions.aerodynamics.coefficients.lift.total          = np.array([[CL_push_man ]])
-    run_conditions.freestream.velocity                           = np.array([[V_trim]])
+    stability_push_maneuver.settings.trim_aircraft               = True 
+    run_conditions.aerodynamics.coefficients.lift.total          = CL_push_man
+    run_conditions.freestream.velocity                           = V_trim
     run_conditions.freestream.mach_number                        = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     stability_pull_maneuver.settings.number_of_spanwise_vortices = 40
     stability_push_maneuver.vehicle                              = vehicle
     run_AVL_analysis(stability_push_maneuver,run_conditions)   
-    AoA_push                                                     = run_conditions.aerodynamics.AoA[0,0]
-    elevator_push_deflection                                     = run_conditions.stability.static.control_surfaces_cases['case_0001_0001'].control_surfaces.elevator.deflection
+    AoA_push                                                     = run_conditions.aerodynamics.angles.alpha[0,0]
+    elevator_push_deflection                                     = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.elevator.deflection
      
     summary.elevator_pull_deflection_residual = (max_defl/Units.degrees  - abs(elevator_pull_deflection))*Units.degrees
     summary.elevator_push_deflection_residual = (max_defl/Units.degrees  - abs(elevator_push_deflection))*Units.degrees
@@ -252,10 +253,10 @@ def elevator_sizing_post_process(nexus):
     
 
     print("Elevator Area      : " + str(summary.elevator_surface_area))
-    print("Aircraft CL Pull   : " + str(CL_pull_man))
+    print("Aircraft CL Pull   : " + str(CL_pull_man[0, 0]))
     print("Aircraft AoA Pull  : " + str(AoA_pull))
     print("Elevator Pull Defl.: " + str(elevator_pull_deflection)) 
-    print("Aircraft CL Push   : " + str(CL_push_man))
+    print("Aircraft CL Push   : " + str(CL_push_man[0, 0]))
     print("Aircraft AoA Push  : " + str(AoA_push))
     print("Elevator Push Defl.: " + str(elevator_push_deflection)) 
     print("\n\n")     
@@ -293,7 +294,7 @@ def aileron_rudder_sizing_post_process(nexus):
     stability_roll_maneuver.settings.filenames.avl_bin_name   = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35'
     stability_roll_maneuver.settings.number_of_spanwise_vortices = 40 
     stability_roll_maneuver.settings.trim_aircraft            = True
-    run_conditions.aerodynamics.coefficients.lift.total       = np.array([[CL_trim ]]) 
+    run_conditions.aerodynamics.coefficients.lift.total       = CL_trim 
     stability_roll_maneuver.vehicle                           = vehicle
     run_conditions.freestream.velocity                        = nexus.missions['aileron_sizing'].segments['cruise'].air_speed
     run_conditions.freestream.mach_number                     = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
@@ -301,11 +302,11 @@ def aileron_rudder_sizing_post_process(nexus):
     run_conditions.static_stability.coefficients.pitch        = np.array([[0.0]]) 
     run_conditions.aerodynamics.angles.beta                   = np.array([[0.0]]) 
     run_AVL_analysis(stability_roll_maneuver,run_conditions)
-    aileron_roll_deflection                                   = run_conditions.stability.static.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
+    aileron_roll_deflection                                   = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
     
     summary.aileron_roll_deflection_residual = (max_defl/Units.degrees  - abs(aileron_roll_deflection))*Units.degrees
     if vehicle.rudder_flag: 
-        rudder_roll_deflection  = run_conditions.stability.static.control_surfaces_cases['case_0001_0001'].control_surfaces.rudder.deflection
+        rudder_roll_deflection  = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.rudder.deflection
         summary.rudder_roll_deflection_residual = (max_defl/Units.degrees  - abs(rudder_roll_deflection))*Units.degrees  
     else:
         rudder_roll_deflection = 0
@@ -328,15 +329,15 @@ def aileron_rudder_sizing_post_process(nexus):
     stability_cross_wind_maneuver.settings.trim_aircraft          =  True
     run_conditions.aerodynamics.coefficients.lift.total           = CL_trim 
     stability_cross_wind_maneuver.vehicle                         = vehicle
-    run_conditions.aerodynamics.angles.beta                       = np.tan(V_crosswind/nexus.missions['aileron_sizing'].segments['cruise'].air_speed) # beta
+    run_conditions.aerodynamics.angles.beta                       = np.array([[np.tan(V_crosswind/nexus.missions['aileron_sizing'].segments['cruise'].air_speed) ]])# beta
     run_AVL_analysis(stability_cross_wind_maneuver,run_conditions)
-    aileron_cross_wind_deflection                                 = run_conditions.stability.static.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
+    aileron_cross_wind_deflection                                 = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
     
     # criteria 
     summary.aileron_crosswind_deflection_residual = (max_defl/Units.degrees  - abs(aileron_cross_wind_deflection))*Units.degrees
 
     if vehicle.rudder_flag: 
-        rudder_cross_wind_deflection  = run_conditions.stability.static.control_surfaces_cases['case_0001_0001'].control_surfaces.rudder.deflection
+        rudder_cross_wind_deflection  = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.rudder.deflection
         summary.rudder_crosswind_deflection_residual = (max_defl/Units.degrees  - abs(rudder_cross_wind_deflection))*Units.degrees  
     else:
         rudder_cross_wind_deflection = 0
