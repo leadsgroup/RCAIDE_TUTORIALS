@@ -47,27 +47,11 @@ def modify_stick_fixed_vehicle(nexus):
     This function takes the updated design variables and modifies the aircraft 
     '''
     # Pull out the vehicles
-    vehicle = nexus.vehicle_configurations.stick_fixed_cruise 
- 
-    ## Discretized propeller into stations using linear interpolation 
-    #if linear_interp_flag:
-        #c    = linear_discretize(x[:total_pivots],chi,pivot_points)     
-        #beta = linear_discretize(x[total_pivots:],chi,pivot_points)  
-    #else: 
-        #c    = spline_discretize(x[:total_pivots],chi,pivot_points)     
-        #beta = spline_discretize(x[total_pivots:],chi,pivot_points) 
-    
+    vehicle = nexus.vehicle_configurations.stick_fixed_cruise  
         
     # Update Wing    
     for wing in vehicle.wings: 
-        update_chords(wing)  
-        
-    # ----------------------------------------------------------------------
-    # Update Vehicle Mass
-    # ---------------------------------------------------------------------- 
-    #weight_breakdown = empty(vehicle) 
-    #vehicle.mass_properties.max_takeoff   = weight_breakdown.total
-    #vehicle.mass_properties.takeoff       = weight_breakdown.total 
+        update_chords(wing)   
      
     # Update Mission  
     nexus.missions = Missions.stick_fixed_stability_setup(nexus.analyses,vehicle)    
@@ -134,7 +118,7 @@ def longitudinal_static_stability_and_drag_post_process(nexus):
     state.conditions = run_conditions     
     compute_dynamic_flight_modes(state,stability_stick_fixed.settings,vehicle)
     
-    summary.CD              = run_conditions.aerodynamics.coefficients.drag.induced.total[0,0] 
+    summary.CD              = run_conditions.aerodynamics.coefficients.drag.induced.total[0,0]  # OBJECTIVE FUNCTION MULTIPLEID BY 10 
     summary.CM_residual     = abs(run_conditions.static_stability.coefficients.pitch[0,0])
     summary.spiral_criteria = run_conditions.static_stability.spiral_criteria[0,0]
     NP                      = run_conditions.static_stability.neutral_point[0,0]
@@ -192,21 +176,20 @@ def elevator_sizing_post_process(nexus):
     vehicle                                            = nexus.vehicle_configurations.elevator_sizing 
     m                                                  = vehicle.mass_properties.max_takeoff
     S                                                  = vehicle.reference_area 
-    V_trim                                             = vehicle.trim_airspeed  
-    max_defl                                           = vehicle.maximum_elevator_deflection
+    V_trim                                             = vehicle.trim_airspeed   
     V_max                                              = nexus.missions['elevator_sizing'].segments['cruise'].air_speed
                                 
     atmosphere                                         = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
     atmo_data                                          = atmosphere.compute_values(altitude = nexus.missions['elevator_sizing'].segments['cruise'].altitude )       
     run_conditions                                     = Results()
-    run_conditions.freestream.density                  =  np.array([[atmo_data.density[0,0]]])
-    run_conditions.freestream.gravity                  =  np.array([[g]])           
-    run_conditions.freestream.speed_of_sound           =  np.array([[atmo_data.speed_of_sound[0,0]]]) 
+    run_conditions.freestream.density                  = np.array([[atmo_data.density[0,0]]])
+    run_conditions.freestream.gravity                  = np.array([[g]])           
+    run_conditions.freestream.speed_of_sound           = np.array([[atmo_data.speed_of_sound[0,0]]]) 
     run_conditions.freestream.dynamic_pressure         = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2)    
-    run_conditions.aerodynamics.angles.beta            =  np.array([[0.0]])
-    run_conditions.aerodynamics.angles.alpha           =  np.array([[0.0]])
-    run_conditions.static_stability.coefficients.roll  =  np.array([[0.0]])
-    run_conditions.static_stability.coefficients.pitch =  np.array([[0.0]]) 
+    run_conditions.aerodynamics.angles.beta            = np.array([[0.0]])
+    run_conditions.aerodynamics.angles.alpha           = np.array([[0.0]])
+    run_conditions.static_stability.coefficients.roll  = np.array([[0.0]])
+    run_conditions.static_stability.coefficients.pitch = np.array([[0.0]]) 
     
     q            = 0.5*(V_trim**2)*atmo_data.density[0,0] 
     CL_pull_man  = vehicle.maxiumum_load_factor*m*g/(S*q)  
@@ -242,14 +225,14 @@ def elevator_sizing_post_process(nexus):
     run_conditions.freestream.velocity                           = V_trim
     run_conditions.frames.inertial.velocity_vector               = V_trim
     run_conditions.freestream.mach_number                        = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
-    stability_pull_maneuver.settings.number_of_spanwise_vortices = 40
+    stability_push_maneuver.settings.number_of_spanwise_vortices = 40
     stability_push_maneuver.vehicle                              = vehicle
     run_AVL_analysis(stability_push_maneuver,run_conditions)   
     AoA_push                                                     = run_conditions.aerodynamics.angles.alpha[0,0]
     elevator_push_deflection                                     = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.elevator.deflection
      
-    summary.elevator_pull_deflection_residual = (max_defl/Units.degrees  - abs(elevator_pull_deflection))*Units.degrees
-    summary.elevator_push_deflection_residual = (max_defl/Units.degrees  - abs(elevator_push_deflection))*Units.degrees
+    summary.elevator_pull_deflection  = abs(elevator_pull_deflection)
+    summary.elevator_push_deflection  = abs(elevator_push_deflection) 
     
     # compute control surface area 
     control_surfaces = ['elevator'] 
@@ -277,46 +260,45 @@ def aileron_rudder_sizing_post_process(nexus):
     1) A controlled roll at a  rate of 0.07
     2) Trimmed flight in a 20 knot crosswind
     ''' 
-    summary                                                   = nexus.summary  
-    g                                                         = 9.81 
-    vehicle                                                   = nexus.vehicle_configurations.aileron_rudder_sizing 
-    CL_trim                                                   = vehicle.trim_cl
-    max_defl                                                  = vehicle.maximum_aileron_rudder_deflection
-    V_crosswind                                               = vehicle.crosswind_velocity
-                                       
-    atmosphere                                                = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
-    atmo_data                                                 = atmosphere.compute_values(altitude = nexus.missions['aileron_sizing'].segments['cruise'].altitude )       
-    run_conditions                                            = Results()
-    run_conditions.freestream.density                         = np.array([[atmo_data.density[0,0]]])  
-    run_conditions.freestream.gravity                         = np.array([[g ]])           
-    run_conditions.freestream.speed_of_sound                  = np.array([[atmo_data.speed_of_sound[0,0]]])  
-    run_conditions.freestream.dynamic_pressure                = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2)    
-    run_conditions.aerodynamics.angles.beta                   = np.array([[0.0]]) 
-    run_conditions.aerodynamics.angles.alpha                  = np.array([[0.0]]) 
+    summary                                                      = nexus.summary  
+    g                                                            = 9.81 
+    vehicle                                                      = nexus.vehicle_configurations.aileron_rudder_sizing 
+    CL_trim                                                      = vehicle.trim_cl 
+    V_crosswind                                                  = vehicle.crosswind_velocity
+                                          
+    atmosphere                                                   = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
+    atmo_data                                                    = atmosphere.compute_values(altitude = nexus.missions['aileron_sizing'].segments['cruise'].altitude )       
+    run_conditions                                               = Results()
+    run_conditions.freestream.density                            = np.array([[atmo_data.density[0,0]]])  
+    run_conditions.freestream.gravity                            = np.array([[g ]])           
+    run_conditions.freestream.speed_of_sound                     = np.array([[atmo_data.speed_of_sound[0,0]]])  
+    run_conditions.freestream.dynamic_pressure                   = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2)    
+    run_conditions.aerodynamics.angles.beta                      = np.array([[0.0]]) 
+    run_conditions.aerodynamics.angles.alpha                     = np.array([[0.0]]) 
     
     
-    stability_roll_maneuver = RCAIDE.Framework.Analyses.Stability.Athena_Vortex_Lattice() 
-    stability_roll_maneuver.settings.filenames.avl_bin_name   = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35'
+    stability_roll_maneuver                                      = RCAIDE.Framework.Analyses.Stability.Athena_Vortex_Lattice() 
+    stability_roll_maneuver.settings.filenames.avl_bin_name      = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35'
     stability_roll_maneuver.settings.number_of_spanwise_vortices = 40 
-    stability_roll_maneuver.settings.trim_aircraft            = True
-    run_conditions.aerodynamics.coefficients.lift.total       = CL_trim 
-    stability_roll_maneuver.vehicle                           = vehicle
-    run_conditions.freestream.velocity                        = nexus.missions['aileron_sizing'].segments['cruise'].air_speed 
-    run_conditions.frames.inertial.velocity_vector[:, 0]      = nexus.missions['aileron_sizing'].segments['cruise'].air_speed 
-    run_conditions.freestream.mach_number                     = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
-    run_conditions.static_stability.coefficients.roll         = np.array([[ 0.07]]) 
-    run_conditions.static_stability.coefficients.pitch        = np.array([[0.0]]) 
-    run_conditions.aerodynamics.angles.beta                   = np.array([[0.0]]) 
-    run_AVL_analysis(stability_roll_maneuver,run_conditions)
-    aileron_roll_deflection                                   = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
+    stability_roll_maneuver.settings.trim_aircraft               = True
+    run_conditions.aerodynamics.coefficients.lift.total          = CL_trim 
+    stability_roll_maneuver.vehicle                              = vehicle
+    run_conditions.freestream.velocity                           = nexus.missions['aileron_sizing'].segments['cruise'].air_speed 
+    run_conditions.frames.inertial.velocity_vector[:, 0]         = nexus.missions['aileron_sizing'].segments['cruise'].air_speed 
+    run_conditions.freestream.mach_number                        = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
+    run_conditions.static_stability.coefficients.roll            = np.array([[ 0.07]]) 
+    run_conditions.static_stability.coefficients.pitch           = np.array([[0.0]]) 
+    run_conditions.aerodynamics.angles.beta                      = np.array([[0.0]]) 
+    run_AVL_analysis(stability_roll_maneuver,run_conditions)   
+    aileron_roll_deflection                                      = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
     
-    summary.aileron_roll_deflection_residual = (max_defl/Units.degrees  - abs(aileron_roll_deflection))*Units.degrees
+    summary.aileron_roll_deflection =  abs(aileron_roll_deflection) 
     if vehicle.rudder_flag: 
         rudder_roll_deflection  = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.rudder.deflection
-        summary.rudder_roll_deflection_residual = (max_defl/Units.degrees  - abs(rudder_roll_deflection))*Units.degrees  
+        summary.rudder_roll_deflection = abs(rudder_roll_deflection) 
     else:
         rudder_roll_deflection = 0
-        summary.rudder_roll_deflection_residual = 0       
+        summary.rudder_roll_deflection = 0       
         
     run_conditions                                                = Results()
     run_conditions.freestream.density                             = np.array([[atmo_data.density[0,0]]])   
@@ -325,7 +307,7 @@ def aileron_rudder_sizing_post_process(nexus):
     run_conditions.freestream.velocity                            = np.array([[nexus.missions['aileron_sizing'].segments['cruise'].air_speed]])
     run_conditions.freestream.dynamic_pressure                    = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2) 
     run_conditions.freestream.mach_number                         = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound   
-    run_conditions.aerodynamics.angles.beta                       =  np.array([[0.0]])  
+    run_conditions.aerodynamics.angles.beta                       = np.array([[0.0]])  
     run_conditions.aerodynamics.angles.alpha                      = np.array([[0.0]])     
     run_conditions.static_stability.coefficients.roll             = np.array([[0.0]])  
     run_conditions.static_stability.coefficients.pitch            = np.array([[0.0]])
@@ -340,19 +322,19 @@ def aileron_rudder_sizing_post_process(nexus):
     aileron_cross_wind_deflection                                 = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.aileron.deflection 
     
     # criteria 
-    summary.aileron_crosswind_deflection_residual = (max_defl/Units.degrees  - abs(aileron_cross_wind_deflection))*Units.degrees
+    summary.aileron_crosswind_deflection = abs(aileron_cross_wind_deflection)  
 
     if vehicle.rudder_flag: 
         rudder_cross_wind_deflection  = run_conditions.static_stability.control_surfaces_cases['case_0001_0001'].control_surfaces.rudder.deflection
-        summary.rudder_crosswind_deflection_residual = (max_defl/Units.degrees  - abs(rudder_cross_wind_deflection))*Units.degrees  
+        summary.rudder_crosswind_deflection =  abs(rudder_cross_wind_deflection)  
     else:
         rudder_cross_wind_deflection = 0
-        summary.rudder_crosswind_deflection_residual = 0  
+        summary.rudder_crosswind_deflection = 0  
         
     # compute control surface area 
     control_surfaces = ['aileron','rudder'] 
     total_control_surface_area = compute_control_surface_areas(control_surfaces,vehicle)   
-    summary.aileron_rudder_surface_area =  total_control_surface_area 
+    summary.aileron_rudder_surface_area =  total_control_surface_area
 
     print("Total Rudder Aileron Surface Area : " + str(summary.aileron_rudder_surface_area)) 
     print("Aileron Roll Defl                 : " + str(aileron_roll_deflection)) 
@@ -372,8 +354,7 @@ def flap_sizing_post_process(nexus):
     ''' 
     summary                                                  = nexus.summary  
     g                                                        = 9.81 
-    vehicle                                                  = nexus.vehicle_configurations.flap_sizing 
-    max_defl                                                 = vehicle.maximum_flap_deflection
+    vehicle                                                  = nexus.vehicle_configurations.flap_sizing  
     V_max                                                    = nexus.missions['flap_sizing'].segments['cruise'].air_speed
           
     atmosphere                                               = RCAIDE.Framework.Analyses.Atmospheric.US_Standard_1976()
@@ -404,7 +385,7 @@ def flap_sizing_post_process(nexus):
     stability_flap.settings.filenames.avl_bin_name           = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' 
     stability_flap.settings.number_of_spanwise_vortices      = 40
     stability_flap.settings.trim_aircraft                    = False
-    vehicle.wings.main_wing.control_surfaces.flap.deflection = max_defl 
+    vehicle.wings.main_wing.control_surfaces.flap.deflection = 40*Units.degrees 
     stability_flap.vehicle                                   = vehicle
     run_AVL_analysis(stability_flap,run_conditions)
     CL_12_deg_flap                                           = stability_flap.aerodynamics.coefficients.lift.total[0,0]     
@@ -415,8 +396,8 @@ def flap_sizing_post_process(nexus):
     # compute control surface area 
     control_surfaces = ['flap'] 
     total_control_surface_area = compute_control_surface_areas(control_surfaces,vehicle)  
-    summary.flap_surface_area  =  total_control_surface_area
-    summary.flap_criteria      =  flap_criteria
+    summary.flap_surface_area  = total_control_surface_area
+    summary.flap_criteria      = flap_criteria
 
     print("Flap Area     : " + str(summary.flap_surface_area))
     print("Flap Criteria : " + str(flap_criteria))  # https://aviation.stackexchange.com/questions/48715/how-is-the-area-of-flaps-determined

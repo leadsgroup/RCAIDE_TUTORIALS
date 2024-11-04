@@ -27,7 +27,7 @@ def main():
     ti = time.time()  
     solver_name       = 'SLSQP' 
     planform_optimization_problem = stick_fixed_stability_and_drag_optimization_setup()
-    output = scipy_setup.SciPy_Solve(planform_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3)  
+    output = scipy_setup.SciPy_Solve(planform_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-2)  
     print (output)    
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
@@ -37,15 +37,14 @@ def main():
     ELEVATOR SIZING
     '''      
     # define vehicle for elevator sizing 
-    optimized_vehicle_v1                             = planform_optimization_problem.vehicle_configurations.stick_fixed_cruise 
-    optimized_vehicle_v1.maximum_elevator_deflection = 30*Units.degrees 
+    optimized_vehicle_v1                             = planform_optimization_problem.vehicle_configurations.stick_fixed_cruise  
     optimized_vehicle_v1.maxiumum_load_factor        = 3.0
     optimized_vehicle_v1.minimum_load_factor         = -1
     
     ti = time.time()   
     solver_name       = 'SLSQP'  
     elevator_sizing_optimization_problem = elevator_sizing_optimization_setup(optimized_vehicle_v1)
-    output = scipy_setup.SciPy_Solve(elevator_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3) 
+    output = scipy_setup.SciPy_Solve(elevator_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-2) 
     print (output)     
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
@@ -56,35 +55,33 @@ def main():
     '''      
     # define vehicle for aileron and rudder sizing
     optimized_vehicle    = elevator_sizing_optimization_problem.vehicle_configurations.elevator_sizing 
-    optimized_vehicle.rudder_flag                       = True 
-    optimized_vehicle.maximum_aileron_rudder_deflection = 30*Units.degrees 
+    optimized_vehicle.rudder_flag                       = True  
     optimized_vehicle.crosswind_velocity                = 20 * Units.knots
-
+    
     ti = time.time()   
     solver_name       = 'SLSQP'  
     aileron_rudder_sizing_optimization_problem = aileron_rudder_sizing_optimization_setup(optimized_vehicle)
-    output = scipy_setup.SciPy_Solve(aileron_rudder_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3) 
+    output = scipy_setup.SciPy_Solve(aileron_rudder_sizing_optimization_problem,solver=solver_name, sense_step = 1E-1, tolerance = 1E-1) 
     print (output)     
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
     print('Aileron and Rudder Sizing Simulation Time: ' + str(elapsed_time))   
-
+    
     '''
     FLAP SIZING
     '''      
     # define vehicle for flap sizing     
-    optimized_vehicle_v3 = aileron_rudder_sizing_optimization_problem.vehicle_configurations.aileron_rudder_sizing
-    optimized_vehicle_v3.maximum_flap_deflection = 40*Units.degrees
+    optimized_vehicle_v3 = aileron_rudder_sizing_optimization_problem.vehicle_configurations.aileron_rudder_sizing 
     
     ti = time.time()   
     solver_name       = 'SLSQP'  
     flap_sizing_optimization_problem = flap_sizing_optimization_setup(optimized_vehicle_v3)
-    output = scipy_setup.SciPy_Solve(flap_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3) 
+    output = scipy_setup.SciPy_Solve(flap_sizing_optimization_problem,solver=solver_name, sense_step = 1E-4, tolerance = 1E-4) 
     print (output)     
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
     print('Flap Sizing Simulation Time: ' + str(elapsed_time))   
-
+    
     '''
     PRINT VEHICLE CONTROL SURFACES
     '''          
@@ -145,7 +142,7 @@ def stick_fixed_stability_and_drag_optimization_setup():
         [ 'short_period_damping_ratio',   '>' ,   0.3   ,   1.0   , 1*Units.less], # checked    
         [ 'dutch_roll_frequency'      ,   '>' ,   0.4   ,   1.0   , 1*Units.less],  # checked   frequency in rad/sec
         [ 'dutch_roll_damping_ratio'  ,   '>' ,   0.08  ,   1.0   , 1*Units.less],  # checked   
-        [ 'spiral_doubling_time'      ,   '>' ,   20.0  ,   1.0  , 1*Units.less],  # checked   
+        [ 'spiral_doubling_time'      ,   '>' ,   20.0  ,   1.0   , 1*Units.less],  # checked   
         [ 'spiral_criteria'           ,   '>' ,   1.0   ,   1.0   , 1*Units.less],  # checked   
     ],dtype=object)
     
@@ -221,7 +218,7 @@ def elevator_sizing_optimization_setup(vehicle):
 
     #   [ tag                   , initial,         (lb , ub)        , scaling , units ]  
     problem.inputs = np.array([            
-                  [ 'hs_elevator_chord_fraction' , 0.2    , 0.1  , 0.3   ,  1.0  ,  1*Units.less],
+                  [ 'hs_elevator_chord_fraction' , 0.2    , 0.15 , 0.3   ,  1.0  ,  1*Units.less],
                   [ 'hs_elevator_span_frac_start', 0.25   , 0.05 , 0.5   ,  1.0 ,  1*Units.less], 
                   [ 'hs_elevator_span_frac_end'  , 0.75   , 0.6  , 0.95  ,  1.0  ,  1*Units.less],     
                   
@@ -242,8 +239,8 @@ def elevator_sizing_optimization_setup(vehicle):
     
     # [ tag, sense, edge, scaling, units ]
     problem.constraints = np.array([ 
-        [ 'elevator_push_deflection_residual'           ,   '>' ,  0  , 1.0   , 1*Units.less], 
-        [ 'elevator_pull_deflection_residual'           ,   '>' ,  0  , 1.0   , 1*Units.less], 
+        [ 'elevator_push_deflection'           ,   '<' ,  30 , 1.0   , 1*Units.less], 
+        [ 'elevator_pull_deflection'           ,   '<' ,  30 , 1.0    , 1*Units.less], 
     ],dtype=object)
     
     # -------------------------------------------------------------------
@@ -253,8 +250,8 @@ def elevator_sizing_optimization_setup(vehicle):
     # [ 'alias' , ['data.path1.name','data.path2.name'] ] 
     problem.aliases = [ 
         [ 'elevator_surface_area'             , 'summary.elevator_surface_area' ], 
-        [ 'elevator_push_deflection_residual' , 'summary.elevator_push_deflection_residual' ],   
-        [ 'elevator_pull_deflection_residual' , 'summary.elevator_pull_deflection_residual' ],     
+        [ 'elevator_push_deflection'          , 'summary.elevator_push_deflection' ],   
+        [ 'elevator_pull_deflection'          , 'summary.elevator_pull_deflection' ],     
         [ 'hs_elevator_chord_fraction'        , 'vehicle_configurations.*.wings.horizontal_stabilizer.control_surfaces.elevator.chord_fraction'],    
         [ 'hs_elevator_span_frac_start'       , 'vehicle_configurations.*.wings.horizontal_stabilizer.control_surfaces.elevator.span_fraction_start'],    
         [ 'hs_elevator_span_frac_end'         , 'vehicle_configurations.*.wings.horizontal_stabilizer.control_surfaces.elevator.span_fraction_end'],  
@@ -332,15 +329,15 @@ def aileron_rudder_sizing_optimization_setup(vehicle):
     # [ tag, sense, edge, scaling, units ]
     if vehicle.rudder_flag:
         problem.constraints = np.array([
-            [ 'aileron_roll_deflection_residual'       ,   '>' ,  0  ,  1.0    , 1*Units.less], 
-            [ 'rudder_roll_deflection_residual'        ,   '>' ,  0  ,  1.0    , 1*Units.less],  
-            [ 'aileron_crosswind_deflection_residual'  ,   '>' ,  0  ,  1.0    , 1*Units.less], 
-            [ 'rudder_crosswind_deflection_residual'   ,   '>' ,  0  ,  1.0    , 1*Units.less],  
+            [ 'aileron_roll_deflection'                ,   '<' ,   30 , 1.0     , 1*Units.less], 
+            [ 'rudder_roll_deflection'                 ,   '<' ,   30 , 1.0     , 1*Units.less],  
+            [ 'aileron_crosswind_deflection'           ,   '<' ,   30 , 1.0     , 1*Units.less], 
+            [ 'rudder_crosswind_deflection'            ,   '<' ,   30 , 1.0     , 1*Units.less],  
         ],dtype=object)
     else:
         problem.constraints = np.array([
-            [ 'aileron_roll_deflection_residual'       ,   '>' ,  0  ,  1.0    , 1*Units.less],  
-            [ 'aileron_crosswind_deflection_residual'  ,   '>' ,  0  ,  1.0    , 1*Units.less],  
+            [ 'aileron_roll_deflection'       ,   '<' ,   30 , 1.0     , 1*Units.less],  
+            [ 'aileron_crosswind_deflection'  ,   '<' ,   30 , 1.0     , 1*Units.less],  
         ],dtype=object)
         
         
@@ -352,10 +349,10 @@ def aileron_rudder_sizing_optimization_setup(vehicle):
     if vehicle.rudder_flag:
         problem.aliases = [ 
             [ 'aileron_rudder_surface_area'            , 'summary.aileron_rudder_surface_area' ],  
-            [ 'aileron_roll_deflection_residual'       , 'summary.aileron_roll_deflection_residual' ],  
-            [ 'rudder_roll_deflection_residual'        , 'summary.rudder_roll_deflection_residual' ], 
-            [ 'aileron_crosswind_deflection_residual'  , 'summary.aileron_crosswind_deflection_residual' ],      
-            [ 'rudder_crosswind_deflection_residual'   , 'summary.rudder_crosswind_deflection_residual' ],         
+            [ 'aileron_roll_deflection'                , 'summary.aileron_roll_deflection' ],  
+            [ 'rudder_roll_deflection'                 , 'summary.rudder_roll_deflection' ], 
+            [ 'aileron_crosswind_deflection'           , 'summary.aileron_crosswind_deflection' ],      
+            [ 'rudder_crosswind_deflection'            , 'summary.rudder_crosswind_deflection' ],         
             [ 'mw_aileron_chord_fraction'              , 'vehicle_configurations.*.wings.main_wing.control_surfaces.aileron.chord_fraction'],  
             [ 'mw_aileron_span_frac_start'             , 'vehicle_configurations.*.wings.main_wing.control_surfaces.aileron.span_fraction_start'],    
             [ 'mw_aileron_span_frac_end'               , 'vehicle_configurations.*.wings.main_wing.control_surfaces.aileron.span_fraction_end'],     

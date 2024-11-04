@@ -34,7 +34,7 @@ def aileron_rudder_sizing_setup(analyses,vehicle):
 def flap_sizing_setup(analyses,vehicle): 
     missions = RCAIDE.Framework.Mission.Missions()
     max_speed_multiplier     = 1.0      
-    missions.flap_sizing     = base_mission_setup(max_speed_multiplier)   
+    missions.flap_sizing     = base_mission_setup(analyses,max_speed_multiplier)   
     return missions        
     
 
