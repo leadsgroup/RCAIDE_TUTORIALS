@@ -116,6 +116,7 @@ def longitudinal_static_stability_and_drag_post_process(nexus):
     run_conditions.freestream.gravity[:,0]                  = g          
     run_conditions.freestream.speed_of_sound[:,0]           = atmo_data.speed_of_sound[0,0] 
     run_conditions.freestream.velocity[:,0]                 = nexus.missions['stick_fixed_cruise'].segments['cruise'].air_speed 
+    run_conditions.frames.inertial.velocity_vector[:,0]     = nexus.missions['stick_fixed_cruise'].segments['cruise'].air_speed 
     run_conditions.freestream.mach_number                   = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     run_conditions.freestream.dynamic_pressure              = 0.5 * run_conditions.freestream.density *  (run_conditions.freestream.velocity ** 2)
     run_conditions.aerodynamics.angles.beta[:,0]            = 0.0 
@@ -143,32 +144,34 @@ def longitudinal_static_stability_and_drag_post_process(nexus):
     summary.CM_alpha        = run_conditions.static_stability.derivatives.CM_alpha[0,0]  
  
     if np.count_nonzero(vehicle.mass_properties.moments_of_inertia.tensor) > 0:  
-        summary.phugoid_damping_ratio   = run_conditions.dynamic_stability.LongModes.phugoidDamp[0,0]
-        summary.short_period_frequency  = run_conditions.dynamic_stability.LongModes.shortPeriodFreqHz[0,0] 
-        summary.dutch_roll_frequency    = run_conditions.dynamic_stability.LatModes.dutchRollFreqHz[0,0]
-        summary.spiral_doubling_time    = run_conditions.dynamic_stability.LatModes.spiralTimeDoubleHalf[0,0] 
-        print("Drag Coefficient      : " + str(summary.CD))
-        print("Moment Coefficient    : " + str(summary.CM_residual))
-        print("Static Margin         : " + str(summary.static_margin))
-        print("CM alpla              : " + str(summary.CM_alpha))   
-        print("Phugoid Damping Ratio : " + str(summary.phugoid_damping_ratio))
-        print("Short Period Frequency: " + str(summary.short_period_frequency))
-        print("Dutch Roll Frequency  : " + str(summary.dutch_roll_frequency))
-        print("Spiral Doubling Time  : " + str(summary.spiral_doubling_time)) 
-        print("Spiral Criteria       : " + str(summary.spiral_criteria))
+        summary.phugoid_damping_ratio       = run_conditions.dynamic_stability.LongModes.phugoidDamping[0,0] 
+        summary.short_period_damping_ratio  = run_conditions.dynamic_stability.LongModes.shortPeriodDamping[0,0] 
+        summary.dutch_roll_frequency        = run_conditions.dynamic_stability.LatModes.dutchRollFreqHz[0,0]* (2 * np.pi)  # converting to omega
+        summary.dutch_roll_damping_ratio    = run_conditions.dynamic_stability.LatModes.dutchRollDamping[0,0]
+        summary.spiral_doubling_time        = run_conditions.dynamic_stability.LatModes.spiralTimeDoubleHalf[0,0] 
+        print("Drag Coefficient           : " + str(summary.CD))
+        print("Moment Coefficient         : " + str(summary.CM_residual))
+        print("Static Margin              : " + str(summary.static_margin))
+        print("CM alpla                   : " + str(summary.CM_alpha))   
+        print("Phugoid Damping Ratio      : " + str(summary.phugoid_damping_ratio))
+        print("Short Period Damping Ratio : " + str(summary.short_period_damping_ratio))
+        print("Dutch Roll Frequency       : " + str(summary.dutch_roll_frequency))
+        print("Dutch Roll Damping Ratio   : " + str(summary.dutch_roll_damping_ratio))
+        print("Spiral Doubling Time       : " + str(summary.spiral_doubling_time)) 
+        print("Spiral Criteria            : " + str(summary.spiral_criteria))
         print("\n\n") 
 
     else: 
-        summary.phugoid_damping_ratio   = 0
-        summary.short_period_frequency  = 0 
-        summary.dutch_roll_frequency    = 0
-        summary.spiral_doubling_time    = 0
-        summary.spiral_criteria         = 0 
-        print("Drag Coefficient      : " + str(summary.CD))
-        print("Moment Coefficient    : " + str(summary.CM_residual))
-        print("Static Margin         : " + str(summary.static_margin))
-        print("CM alpla              : " + str(summary.CM_alpha))    
-        print("Spiral Criteria       : " + str(summary.spiral_criteria))
+        summary.phugoid_damping_ratio    = 0 
+        summary.dutch_roll_frequency     = 0
+        summary.dutch_roll_damping_ratio = 0
+        summary.spiral_doubling_time     = 0
+        summary.spiral_criteria          = 0 
+        print("Drag Coefficient         : " + str(summary.CD))
+        print("Moment Coefficient       : " + str(summary.CM_residual))
+        print("Static Margin            : " + str(summary.static_margin))
+        print("CM alpla                 : " + str(summary.CM_alpha))    
+        print("Spiral Criteria          : " + str(summary.spiral_criteria))
         print("\n\n")    
         
         
@@ -213,7 +216,8 @@ def elevator_sizing_post_process(nexus):
     stability_pull_maneuver.settings.filenames.avl_bin_name      = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35'
     stability_pull_maneuver.settings.trim_aircraft               = True
     run_conditions.aerodynamics.coefficients.lift.total          = CL_pull_man
-    run_conditions.freestream.velocity                           =  np.array([[V_max]])
+    run_conditions.freestream.velocity                           = np.array([[V_max]])
+    run_conditions.frames.inertial.velocity_vector[:,0]          = V_max
     run_conditions.freestream.mach_number                        = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     stability_pull_maneuver.settings.number_of_spanwise_vortices = 40
     stability_pull_maneuver.vehicle                              = vehicle
@@ -236,6 +240,7 @@ def elevator_sizing_post_process(nexus):
     stability_push_maneuver.settings.trim_aircraft               = True 
     run_conditions.aerodynamics.coefficients.lift.total          = CL_push_man
     run_conditions.freestream.velocity                           = V_trim
+    run_conditions.frames.inertial.velocity_vector               = V_trim
     run_conditions.freestream.mach_number                        = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     stability_pull_maneuver.settings.number_of_spanwise_vortices = 40
     stability_push_maneuver.vehicle                              = vehicle
@@ -296,7 +301,8 @@ def aileron_rudder_sizing_post_process(nexus):
     stability_roll_maneuver.settings.trim_aircraft            = True
     run_conditions.aerodynamics.coefficients.lift.total       = CL_trim 
     stability_roll_maneuver.vehicle                           = vehicle
-    run_conditions.freestream.velocity                        = nexus.missions['aileron_sizing'].segments['cruise'].air_speed
+    run_conditions.freestream.velocity                        = nexus.missions['aileron_sizing'].segments['cruise'].air_speed 
+    run_conditions.frames.inertial.velocity_vector[:, 0]      = nexus.missions['aileron_sizing'].segments['cruise'].air_speed 
     run_conditions.freestream.mach_number                     = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
     run_conditions.static_stability.coefficients.roll         = np.array([[ 0.07]]) 
     run_conditions.static_stability.coefficients.pitch        = np.array([[0.0]]) 
@@ -424,7 +430,7 @@ def  compute_control_surface_areas(control_surfaces,vehicle):
     This function computes the control suface area used in the objectives of the 
     control surface sizing scripts 
     '''
-    total_control_surface_area = 0
+    total_control_surface_area = 0 
     for cs_idx in range(len(control_surfaces)):
         for wing in vehicle.wings:
             if getattr(wing,'control_surfaces',False):  
@@ -432,14 +438,17 @@ def  compute_control_surface_areas(control_surfaces,vehicle):
                     if CS.tag == control_surfaces[cs_idx]:
                         if wing.Segments: 
                             num_segs = len(wing.Segments)
+                            segment_names = list(wing.Segments.keys())   
                             for seg_id in range(num_segs-1): 
-                                if (CS.span_fraction_start >= wing.Segments[seg_id].percent_span_location) \
-                                   and (CS.span_fraction_end <= wing.Segments[seg_id+1].percent_span_location): 
-                                    root_chord             = wing.Segments[seg_id].root_chord_percent*wing.chords.root
-                                    tip_chord              = wing.Segments[seg_id+1].root_chord_percent*wing.chords.root
-                                    span                   = (wing.Segments[seg_id+1].percent_span_location-wing.Segments[seg_id].percent_span_location)*wing.spans.projected
-                                    rel_start_percent_span = CS.span_fraction_start - wing.Segments[seg_id].percent_span_location
-                                    rel_end_percent_span   = CS.span_fraction_end - wing.Segments[seg_id].percent_span_location
+                                current_seg =  segment_names[seg_id]
+                                next_seg    =  segment_names[seg_id+1] 
+                                if (CS.span_fraction_start >= wing.Segments[current_seg].percent_span_location) \
+                                   and (CS.span_fraction_end <= wing.Segments[next_seg].percent_span_location): 
+                                    root_chord             = wing.Segments[current_seg].root_chord_percent*wing.chords.root
+                                    tip_chord              = wing.Segments[next_seg].root_chord_percent*wing.chords.root
+                                    span                   = (wing.Segments[next_seg].percent_span_location-wing.Segments[current_seg].percent_span_location)*wing.spans.projected
+                                    rel_start_percent_span = CS.span_fraction_start - wing.Segments[current_seg].percent_span_location
+                                    rel_end_percent_span   = CS.span_fraction_end - wing.Segments[current_seg].percent_span_location
                                     chord_fraction         = CS.chord_fraction 
                                     area = conpute_control_surface_area(root_chord,tip_chord,span,rel_start_percent_span,rel_end_percent_span,chord_fraction)
                                     total_control_surface_area += area

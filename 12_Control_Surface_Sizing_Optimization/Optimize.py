@@ -45,7 +45,7 @@ def main():
     ti = time.time()   
     solver_name       = 'SLSQP'  
     elevator_sizing_optimization_problem = elevator_sizing_optimization_setup(optimized_vehicle_v1)
-    output = scipy_setup.SciPy_Solve(elevator_sizing_optimization_problem,solver=solver_name, sense_step = 1E-4, tolerance = 1E-3) 
+    output = scipy_setup.SciPy_Solve(elevator_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3) 
     print (output)     
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
@@ -63,7 +63,7 @@ def main():
     ti = time.time()   
     solver_name       = 'SLSQP'  
     aileron_rudder_sizing_optimization_problem = aileron_rudder_sizing_optimization_setup(optimized_vehicle)
-    output = scipy_setup.SciPy_Solve(aileron_rudder_sizing_optimization_problem,solver=solver_name, sense_step = 1E-4, tolerance = 1E-3) 
+    output = scipy_setup.SciPy_Solve(aileron_rudder_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3) 
     print (output)     
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
@@ -79,7 +79,7 @@ def main():
     ti = time.time()   
     solver_name       = 'SLSQP'  
     flap_sizing_optimization_problem = flap_sizing_optimization_setup(optimized_vehicle_v3)
-    output = scipy_setup.SciPy_Solve(flap_sizing_optimization_problem,solver=solver_name, sense_step = 1E-4, tolerance = 1E-3) 
+    output = scipy_setup.SciPy_Solve(flap_sizing_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-3) 
     print (output)     
     tf           = time.time()
     elapsed_time = round((tf-ti)/60,2)
@@ -137,15 +137,16 @@ def stick_fixed_stability_and_drag_optimization_setup():
     # [ tag, sense, edge, scaling, units ] See http://everyspec.com/MIL-SPECS/MIL-SPECS-MIL-F/MIL-F-8785C_5295/
     # Level 1, Category B
     problem.constraints = np.array([
-        [ 'CM_residual'           ,   '<' ,   1E-2 ,   1E-2  , 1*Units.less], # close to zero 2 works 
-        [ 'static_margin'         ,   '>' ,   0.1  ,   0.1   , 1*Units.less],
-        [ 'CM_alpha'              ,   '<' ,   0.0  ,   1.0   , 1*Units.less],  
-        [ 'phugoid_damping_ratio' ,   '>' ,   0.04 ,   1.0   , 1*Units.less],  
-        [ 'short_period_frequency',   '<' ,   1.34 ,   1.0   , 1*Units.less],
-        [ 'short_period_frequency',   '>' ,   0.35 ,   1.0   , 1*Units.less],    
-        [ 'dutch_roll_frequency'  ,   '>' ,   0.4 / (2 * np.pi),   1.0   , 1*Units.less],  
-        [ 'spiral_doubling_time'  ,   '>' ,   12.0  ,   1.0  , 1*Units.less],  
-        [ 'spiral_criteria'       ,   '>' ,   1.0  ,   1.0   , 1*Units.less],  
+        [ 'CM_residual'               ,   '<' ,   1E-2  ,   1E-2  , 1*Units.less], # close to zero 2 works 
+        [ 'static_margin'             ,   '>' ,   0.1   ,   0.1   , 1*Units.less],  # checked 
+        [ 'CM_alpha'                  ,   '<' ,   0.0   ,   1.0   , 1*Units.less],  # checked 
+        [ 'phugoid_damping_ratio'     ,   '>' ,   0.04  ,   1.0   , 1*Units.less],  # checked 
+        [ 'short_period_damping_ratio',   '<' ,   2.0   ,   1.0   , 1*Units.less],  # checked 
+        [ 'short_period_damping_ratio',   '>' ,   0.3   ,   1.0   , 1*Units.less], # checked    
+        [ 'dutch_roll_frequency'      ,   '>' ,   0.4   ,   1.0   , 1*Units.less],  # checked   frequency in rad/sec
+        [ 'dutch_roll_damping_ratio'  ,   '>' ,   0.08  ,   1.0   , 1*Units.less],  # checked   
+        [ 'spiral_doubling_time'      ,   '>' ,   20.0  ,   1.0  , 1*Units.less],  # checked   
+        [ 'spiral_criteria'           ,   '>' ,   1.0   ,   1.0   , 1*Units.less],  # checked   
     ],dtype=object)
     
     # -------------------------------------------------------------------
@@ -159,8 +160,9 @@ def stick_fixed_stability_and_drag_optimization_setup():
         [ 'CM_alpha'                          , 'summary.CM_alpha' ],    
         [ 'static_margin'                     , 'summary.static_margin' ], 
         [ 'phugoid_damping_ratio'             , 'summary.phugoid_damping_ratio' ],  
-        [ 'short_period_frequency'            , 'summary.short_period_frequency' ],  
+        [ 'short_period_damping_ratio'        , 'summary.short_period_damping_ratio' ],  
         [ 'dutch_roll_frequency'              , 'summary.dutch_roll_frequency' ],  
+        [ 'dutch_roll_damping_ratio'          , 'summary.dutch_roll_damping_ratio' ],  
         [ 'spiral_doubling_time'              , 'summary.spiral_doubling_time' ],   
         [ 'spiral_criteria'                   , 'summary.spiral_criteria' ],      
         #[ 'mw_area'                           , 'vehicle_configurations.*.wings.main_wing.areas.reference'],
@@ -219,9 +221,9 @@ def elevator_sizing_optimization_setup(vehicle):
 
     #   [ tag                   , initial,         (lb , ub)        , scaling , units ]  
     problem.inputs = np.array([            
-                  [ 'hs_elevator_chord_fraction' , 0.2    , 0.05 , 0.3   ,  1.0 ,  1*Units.less],
-                  [ 'hs_elevator_span_frac_start', 0.25   , 0.05 , 0.6   ,  1.0 ,  1*Units.less], 
-                  [ 'hs_elevator_span_frac_end'  , 0.75   , 0.55 , 0.95  ,  1.0 ,  1*Units.less],     
+                  [ 'hs_elevator_chord_fraction' , 0.2    , 0.1  , 0.3   ,  1.0  ,  1*Units.less],
+                  [ 'hs_elevator_span_frac_start', 0.25   , 0.05 , 0.5   ,  1.0 ,  1*Units.less], 
+                  [ 'hs_elevator_span_frac_end'  , 0.75   , 0.6  , 0.95  ,  1.0  ,  1*Units.less],     
                   
     ],dtype=object)   
 

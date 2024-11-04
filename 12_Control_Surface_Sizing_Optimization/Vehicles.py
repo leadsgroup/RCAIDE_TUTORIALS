@@ -48,7 +48,7 @@ def vehicle_setup():
     # mass properties
     vehicle.mass_properties.max_takeoff               = 2948 * Units.pounds
     vehicle.mass_properties.takeoff                   = 2948 * Units.pounds
-    vehicle.mass_properties.moments_of_inertia.tensor = np.array([[164627.7,0.0,0.0],[0.0,471262.4,0.0],[0.0,0.0,554518.7]])
+    vehicle.mass_properties.moments_of_inertia.tensor = np.array([[1741,0.0,0.0],[0.0,3759,0.0],[0.0,0.0,4386]])
     vehicle.mass_properties.center_of_gravity         = [[2.239696797,0,-0.131189711 ]]
     vehicle.envelope.ultimate_load                    = 5.7
     vehicle.envelope.limit_load                       = 3.8
