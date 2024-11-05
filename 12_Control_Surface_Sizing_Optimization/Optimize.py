@@ -24,7 +24,8 @@ def main():
     '''
     STICK FIXED (STATIC STABILITY AND DRAG OTIMIZATION
     '''
-    ti = time.time()  
+    ti_0 = time.time()
+    ti   = time.time()  
     solver_name       = 'SLSQP' 
     planform_optimization_problem = stick_fixed_stability_and_drag_optimization_setup()
     output = scipy_setup.SciPy_Solve(planform_optimization_problem,solver=solver_name, sense_step = 1E-2, tolerance = 1E-2)  
@@ -87,7 +88,10 @@ def main():
     '''          
     optimized_vehicle_v4  = flap_sizing_optimization_problem.vehicle_configurations.flap_sizing 
     print_vehicle_control_surface_geoemtry(optimized_vehicle_v4)
-    
+     
+    tf_0           = time.time()
+    total_elapsed_time = round((tf_0-ti_0)/60,2)    
+    print('Total Control Surface Sizing Time: ' + str(total_elapsed_time))
     return
   
 def stick_fixed_stability_and_drag_optimization_setup(): 

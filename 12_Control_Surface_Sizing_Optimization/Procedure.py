@@ -365,7 +365,7 @@ def flap_sizing_post_process(nexus):
     run_conditions.freestream.speed_of_sound                 = np.array([[atmo_data.speed_of_sound[0,0]  ]]) 
     run_conditions.freestream.velocity                       = np.array([[V_max]])  
     run_conditions.freestream.mach_number                    = run_conditions.freestream.velocity/run_conditions.freestream.speed_of_sound
-    run_conditions.aerodynamics.angles.beta                  = 0.0
+    run_conditions.aerodynamics.angles.beta                  = np.array([[0.0]]) 
     run_conditions.aerodynamics.coefficients.lift.total      = None
     run_conditions.aerodynamics.angles.alpha                 = np.array([[12.0]])*Units.degrees
     run_conditions.static_stability.coefficients.roll        = np.array([[0.0]]) 
@@ -377,10 +377,10 @@ def flap_sizing_post_process(nexus):
     stability_no_flap.settings.trim_aircraft                 = False
     vehicle.wings.main_wing.control_surfaces.flap.deflection = 0.0
     stability_no_flap.vehicle                                = vehicle
-    results_no_flap                                          = run_AVL_analysis(stability_no_flap,run_conditions)
-    CL_12_deg_no_flap                                        = results_no_flap.aerodynamics.coefficients.lift.total[0,0]  
+    run_AVL_analysis(stability_no_flap,run_conditions)
+    CL_12_deg_no_flap                                        = run_conditions.aerodynamics.coefficients.lift.total[0,0]  
       
-    
+     
     stability_flap = RCAIDE.Framework.Analyses.Stability.Athena_Vortex_Lattice() 
     stability_flap.settings.filenames.avl_bin_name           = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' # eg. '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' 
     stability_flap.settings.number_of_spanwise_vortices      = 40
@@ -388,7 +388,7 @@ def flap_sizing_post_process(nexus):
     vehicle.wings.main_wing.control_surfaces.flap.deflection = 40*Units.degrees 
     stability_flap.vehicle                                   = vehicle
     run_AVL_analysis(stability_flap,run_conditions)
-    CL_12_deg_flap                                           = stability_flap.aerodynamics.coefficients.lift.total[0,0]     
+    CL_12_deg_flap  = run_conditions.aerodynamics.coefficients.lift.total[0,0]     
     
     # critera     
     flap_criteria  = (CL_12_deg_flap-CL_12_deg_no_flap) - 0.95*(CL_12_deg_flap-CL_12_deg_no_flap) 
