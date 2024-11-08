@@ -519,15 +519,7 @@ def base_vehicle_setup() :
     vehicle.wings['main_wing'].motor_spanwise_locations   = motor_origins[:,1]/ vehicle.wings['main_wing'].spans.projected
     
     # add the solar network to the vehicle
-    vehicle.append_component(net)
-     
-    settings = Data()
-    converge_evtol_weight(vehicle,settings,contingency_factor = 1.1) 
-    breakdown = empty(vehicle,settings,contingency_factor     = 1.1 ) 
-    
-    vehicle.weight_breakdown  = breakdown
-    compute_component_centers_of_gravity(vehicle)
-    vehicle.center_of_gravity()  
+    vehicle.append_component(net) 
     
     return vehicle 
      

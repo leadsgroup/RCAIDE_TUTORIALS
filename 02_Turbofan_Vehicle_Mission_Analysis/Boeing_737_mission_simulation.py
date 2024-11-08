@@ -5,8 +5,9 @@
 # RCAIDE imports 
 import RCAIDE
 from RCAIDE.Framework.Core import Units   
-from RCAIDE.Library.Methods.Propulsors.Turbofan_Propulsor          import design_turbofan
-from RCAIDE.Library.Methods.Stability.Center_of_Gravity            import compute_component_centers_of_gravity
+from RCAIDE.Library.Methods.Propulsors.Turbofan_Propulsor          import design_turbofan 
+from RCAIDE.Library.Methods.Weights.Moment_of_Inertia.compute_aircraft_moment_of_inertia import compute_aircraft_moment_of_inertia
+from RCAIDE.Library.Methods.Weights.Center_of_Gravity                        import compute_vehicle_center_of_gravity
 from RCAIDE.Library.Methods.Geometry.Planform                      import segment_properties
 from RCAIDE.Library.Plots                                          import *     
 
@@ -66,8 +67,15 @@ def vehicle_setup():
     vehicle.mass_properties.operating_empty           = 62746.4 * Units.kilogram  
     vehicle.mass_properties.max_zero_fuel             = 62732.0 * Units.kilogram 
     vehicle.mass_properties.cargo                     = 10000.  * Units.kilogram  
-    vehicle.envelope.ultimate_load                    = 3.75
-    vehicle.envelope.limit_load                       = 2.5 
+    vehicle.mass_properties.center_of_gravity         = [[18.78278912,  0.        ,  0.03748194]] 
+    #vehicle.mass_properties.moments_of_inertia.tensor =  np.array([[ 291192.66877635,   9394.81679478, 102498.42231056],
+                                                                   #[  9394.81679478, 1148904.72896127,    2251.30702901],
+                                                                   #[102498.42231056,    2251.30702901, 1278566.04272642]])   
+    vehicle.flight_envelope.ultimate_load             = 3.75
+    vehicle.flight_envelope.limit_load                = 2.5 
+    vehicle.flight_envelope.design_mach_number        = 0.78 
+    vehicle.flight_envelope.design_cruise_altitude    = 35000*Units.feet
+    vehicle.flight_envelope.design_range              = 3500 * Units.nmi
     vehicle.reference_area                            = 124.862 * Units['meters**2']   
     vehicle.passengers                                = 170
     vehicle.systems.control                           = "fully powered" 
@@ -664,18 +672,30 @@ def vehicle_setup():
 
     # Append energy network to aircraft 
     vehicle.append_energy_network(net)    
+     
+     
+
+    # ------------------------------------------------------------------
+    #   Weight Breakdown 
+    # ------------------------------------------------------------------  
+    weight_analysis                               = RCAIDE.Framework.Analyses.Weights.Weights_Transport()
+    weight_analysis.vehicle                       = vehicle
+    weight_analysis.settings.use_max_fuel_weight  = False  
+    results                                       = weight_analysis.evaluate() 
     
-    #------------------------------------------------------------------------------------------------------------------------- 
-    # Compute Center of Gravity of aircraft (Optional)
-    #------------------------------------------------------------------------------------------------------------------------- 
-   
-    vehicle.center_of_gravity()    
-    compute_component_centers_of_gravity(vehicle)
+    # ------------------------------------------------------------------
+    #   CG Location
+    # ------------------------------------------------------------------    
+    compute_vehicle_center_of_gravity( weight_analysis.vehicle) 
+    CG_location      =  weight_analysis.vehicle.mass_properties.center_of_gravity
     
-    #------------------------------------------------------------------------------------------------------------------------- 
-    # Done ! 
-    #------------------------------------------------------------------------------------------------------------------------- 
-      
+    # ------------------------------------------------------------------
+    #   Operating Aircraft MOI
+    # ------------------------------------------------------------------    
+    MOI, total_mass = compute_aircraft_moment_of_inertia(weight_analysis.vehicle, CG_location)   
+     
+     
+     
     return vehicle
  
 # ----------------------------------------------------------------------
@@ -795,7 +815,8 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Aerodynamics Analysis
-    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Vortex_Lattice_Method()
+    aerodynamics = RCAIDE.Framework.Analyses.Aerodynamics.Athena_Vortex_Lattice()
+    aerodynamics.settings.filenames.avl_bin_name      = '/Users/matthewclarke/Documents/LEADS/CODES/AVL/avl3.35' 
     aerodynamics.vehicle = vehicle
     aerodynamics.settings.number_of_spanwise_vortices   = 25
     aerodynamics.settings.number_of_chordwise_vortices  = 5   
