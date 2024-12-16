@@ -95,7 +95,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Planet Analysis
-    planet = RCAIDE.Framework.Analyses.Planets.Planet()
+    planet = RCAIDE.Framework.Analyses.Planets.Earth()
     analyses.append(planet)
 
     # ------------------------------------------------------------------
@@ -513,8 +513,7 @@ def vehicle_setup() :
         propulsor_i.nacelle.tag                           = 'prop_rotor_nacelle_' + str(i + 1)  
         propulsor_i.nacelle.origin                        = [origins[i]]   
         network.propulsors.append(propulsor_i)   
-        assigned_propulsor_list.append(propulsor_i.tag)
- 
+        assigned_propulsor_list.append(propulsor_i.tag) 
     bus.assigned_propulsors = [assigned_propulsor_list]
     
     #------------------------------------------------------------------------------------------------------------------------------------  

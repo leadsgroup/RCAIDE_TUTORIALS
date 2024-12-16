@@ -691,8 +691,7 @@ def vehicle_setup() :
                                                               airfoil_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_7500000.txt' ]
     lift_rotor.append_airfoil(airfoil)                         
     lift_rotor.airfoil_polar_stations                      = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]   
-    design_lift_rotor(lift_rotor)          
-            
+    design_lift_rotor(lift_rotor)           
     lift_propulsor_1.rotor =  lift_rotor          
     
     #------------------------------------------------------------------------------------------------------------------------------------               
@@ -708,8 +707,7 @@ def vehicle_setup() :
     lift_rotor_motor.angular_velocity                      = lift_rotor.hover.design_angular_velocity/lift_rotor_motor.gear_ratio  
     design_motor(lift_rotor_motor)
     lift_rotor_motor.mass_properties.mass                  = compute_motor_weight(lift_rotor_motor)     
-    lift_propulsor_1.motor                                 = lift_rotor_motor
-    
+    lift_propulsor_1.motor                                 = lift_rotor_motor 
 
 
     #------------------------------------------------------------------------------------------------------------------------------------               
@@ -729,7 +727,8 @@ def vehicle_setup() :
                [ 0.219 ,  4.891 , 1.2], [ 0.219  , - 4.891 , 1.2], [ 4.196 ,  4.891 , 1.2], [ 4.196  , - 4.891 , 1.2]]
     orientation_euler_angles = [[10.0*Units.degrees,np.pi/2.,0.],[-10.0* Units.degrees,np.pi/2.,0.], [10.0* Units.degrees,np.pi/2.,0.], [-10.0* Units.degrees,np.pi/2.,0.], 
                                 [10.0* Units.degrees,np.pi/2.,0.], [-10.0* Units.degrees,np.pi/2.,0.], [10.0* Units.degrees,np.pi/2.,0.], [-10.0* Units.degrees,np.pi/2.,0.]] # vector of angles defining default orientation of rotor
-     
+
+    assigned_propulsor_list = []         
     for i in range(len(origins)): 
         propulsor_i                                       = deepcopy(lift_propulsor_1)
         propulsor_i.tag                                   = 'lift_propulsor_' + str(i + 1)
@@ -743,6 +742,9 @@ def vehicle_setup() :
         propulsor_i.nacelle.tag                           = 'lift_rotor_nacelle_' + str(i + 1)  
         propulsor_i.nacelle.origin                        = [origins[i]]    
         network.propulsors.append(propulsor_i)  
+        assigned_propulsor_list.append(propulsor_i.tag) 
+    lift_bus.assigned_propulsors = [assigned_propulsor_list]
+    
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Additional Bus Loads
@@ -757,9 +759,7 @@ def vehicle_setup() :
     avionics                                                = RCAIDE.Library.Components.Systems.Avionics()
     avionics.power_draw                                     = 10. # Watts  
     avionics.mass_properties.mass                           = 1.0 * Units.kg
-    lift_bus.avionics                                       = avionics    
-
-   
+    lift_bus.avionics                                       = avionics     
     network.busses.append(lift_bus)       
         
     # append energy network 
@@ -859,7 +859,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Planet Analysis
-    planet = RCAIDE.Framework.Analyses.Planets.Planet()
+    planet = RCAIDE.Framework.Analyses.Planets.Earth()
     analyses.append(planet)
 
     # ------------------------------------------------------------------

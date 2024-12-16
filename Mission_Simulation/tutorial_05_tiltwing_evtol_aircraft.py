@@ -588,7 +588,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Planet Analysis
-    planet = RCAIDE.Framework.Analyses.Planets.Planet()
+    planet = RCAIDE.Framework.Analyses.Planets.Earth()
     analyses.append(planet)
 
     # ------------------------------------------------------------------

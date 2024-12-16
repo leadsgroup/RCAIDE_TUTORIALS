@@ -115,7 +115,7 @@ def base_analysis(vehicle):
 
     # ------------------------------------------------------------------
     #  Planet Analysis
-    planet = RCAIDE.Framework.Analyses.Planets.Planet()
+    planet = RCAIDE.Framework.Analyses.Planets.Earth()
     analyses.append(planet)
 
     # ------------------------------------------------------------------
@@ -723,7 +723,8 @@ def vehicle_setup(redesign_rotors=True) :
 
     # Front Rotors Locations 
     origins =  [[-0.073, -2.25 ,1.2],  [-0.073, 2.25 ,1.2] , [ -0.073 , -5.7  , 1.2] ,[ -0.073 ,  5.7, 1.2], [ -0.073 , -9.2  , 1.2] ,[ -0.073 , 9.2, 1.2]]
-    
+
+    assigned_propulsor_list = []     
     for i in range(len(origins)): 
         propulsor_i                                       = deepcopy(front_propulsor)
         propulsor_i.tag                                   = 'prop_rotor_propulsor_' + str(i + 1)
@@ -735,7 +736,9 @@ def vehicle_setup(redesign_rotors=True) :
         propulsor_i.electronic_speed_controller.origin    = [origins[i]]  
         propulsor_i.nacelle.tag                           = 'prop_rotor_nacelle_' + str(i + 1)  
         propulsor_i.nacelle.origin                        = [origins[i]]   
-        prop_rotor_bus.propulsors.append(propulsor_i) 
+        network.propulsors.append(propulsor_i) 
+        assigned_propulsor_list.append(propulsor_i.tag) 
+    prop_rotor_bus.assigned_propulsors = [assigned_propulsor_list]
  
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Additional Bus Loads
@@ -817,17 +820,8 @@ def vehicle_setup(redesign_rotors=True) :
                                                               airfoil_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_5000000.txt',
                                                               airfoil_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_7500000.txt' ]
     lift_rotor.append_airfoil(airfoil)                         
-    lift_rotor.airfoil_polar_stations                      = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]  
-    
-    if redesign_rotors:
-        design_lift_rotor(lift_rotor)
-        save_rotor(lift_rotor, os.path.join(local_path, 'Tilt_Stopped_Rotor_lift_rotor_geometry.res'))
-    else: 
-        loaded_lift_rotor = load_rotor(os.path.join(local_path, 'Tilt_Stopped_Rotor_lift_rotor_geometry.res')) 
-        for key,item in lift_rotor.items():
-            lift_rotor[key] = loaded_lift_rotor[key] 
-        lift_rotor.Wake   = RCAIDE.Framework.Analyses.Propulsion.Rotor_Wake_Fidelity_Zero()         
-            
+    lift_rotor.airfoil_polar_stations                      = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
+    design_lift_rotor(lift_rotor) 
     lift_propulsor.rotor =  lift_rotor          
     
     #------------------------------------------------------------------------------------------------------------------------------------               
@@ -859,7 +853,8 @@ def vehicle_setup(redesign_rotors=True) :
     # Front Rotors Locations
     origins =  [[ 4.196, -2.25 ,1.2],  [ 4.196, 2.25 ,1.2] , [ 4.196, -5.7  , 1.2] ,[ 4.196,  5.7, 1.2], [ 4.196, -9.2  , 1.2] ,[  4.196 , 9.2, 1.2]] 
     orientation_euler_angles = [[0,-90*Units.degrees,0.] ,[0,-90*Units.degrees,0.]  ,[0,-90*Units.degrees,0.] , [0,-90*Units.degrees,0.] ,[0,-90*Units.degrees,0.] , [0,-90*Units.degrees,0.]  ]  
-      
+
+    assigned_propulsor_list = []       
     for i in range(len(origins)): 
         propulsor_i                                       = deepcopy(lift_propulsor)
         propulsor_i.tag                                   = 'lift_rotor_propulsor_' + str(i + 1)
@@ -872,7 +867,9 @@ def vehicle_setup(redesign_rotors=True) :
         propulsor_i.electronic_speed_controller.origin    = [origins[i]]  
         propulsor_i.nacelle.tag                           = 'lift_rotor_nacelle_' + str(i + 1)  
         propulsor_i.nacelle.origin                        = [origins[i]]    
-        lift_rotor_bus.propulsors.append(propulsor_i)  
+        network.propulsors.append(propulsor_i)  
+        assigned_propulsor_list.append(propulsor_i.tag) 
+    lift_rotor_bus.assigned_propulsors = [assigned_propulsor_list]
 
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Additional Bus Loads
