@@ -16,10 +16,8 @@ import numpy as np
 # ----------------------------------------------------------------------
 #   Main
 # ---------------------------------------------------------------------- 
-def main():      
-    # -----------------------------------------------
-    # Batch analysis of single airfoil - NACA 2410 
-    # -----------------------------------------------
+def main():       
+    # Batch analysis of single airfoil - NACA 2410
     # angle of attack sweep at Reynolds number = 10,000
     
     # define Reynolds numbers 

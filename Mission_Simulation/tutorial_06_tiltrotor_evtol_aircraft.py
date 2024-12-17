@@ -13,7 +13,6 @@ from RCAIDE.Framework.Core import Units
 from RCAIDE.Library.Methods.Geometry.Planform                                  import segment_properties,wing_segmented_planform   
 from RCAIDE.Library.Methods.Weights.Correlation_Buildups.Propulsion            import compute_motor_weight
 from RCAIDE.Library.Methods.Propulsors.Converters.DC_Motor                     import design_motor
-from RCAIDE.Library.Methods.Performance                                        import estimate_stall_speed
 from RCAIDE.Library.Methods.Propulsors.Converters.Rotor                        import design_prop_rotor  
 from RCAIDE.Library.Methods.Weights.Physics_Based_Buildups.Electric            import converge_physics_based_weight_buildup 
 from RCAIDE.Library.Methods.Weights.Moment_of_Inertia                          import compute_aircraft_moment_of_inertia
@@ -31,7 +30,8 @@ import  pickle
 #  REGRESSION
 # ----------------------------------------------------------------------------------------------------------------------  
 def main():           
-           
+         
+    # vehicle data  
     vehicle  = vehicle_setup() 
 
     # Set up configs
@@ -40,7 +40,7 @@ def main():
     # vehicle analyses
     analyses = analyses_setup(configs)
 
-    
+    # mission analyses
     mission  = mission_setup(analyses) 
     missions = missions_setup(mission) 
      
@@ -48,7 +48,18 @@ def main():
      
     # plot the results 
     plot_results(results) 
- 
+
+    ## plot vehicle 
+    #plot_3d_vehicle(vehicle, 
+                    #min_x_axis_limit            = -5,
+                    #max_x_axis_limit            = 15,
+                    #min_y_axis_limit            = -10,
+                    #max_y_axis_limit            = 10,
+                    #min_z_axis_limit            = -10,
+                    #max_z_axis_limit            = 10,
+                    #show_figure                 = False 
+                    #)               
+     
     return
  
 def analyses_setup(configs):
@@ -116,7 +127,7 @@ def vehicle_setup() :
 
     ospath      = os.path.abspath(__file__)
     separator   = os.path.sep
-    airfoil_path    = os.path.dirname(ospath) + separator  
+    airfoil_path    = os.path.dirname(ospath) + separator      
     
     # ------------------------------------------------------------------
     #   Initialize the Vehicle
@@ -134,8 +145,8 @@ def vehicle_setup() :
     vehicle.mass_properties.max_takeoff       = 2177             
     vehicle.mass_properties.center_of_gravity = [[2.0144,   0.  ,  0. ]]      
     vehicle.reference_area                    = 10.39
-    vehicle.envelope.ultimate_load            = 5.7   
-    vehicle.envelope.limit_load               = 3.  
+    vehicle.flight_envelope.ultimate_load            = 5.7   
+    vehicle.flight_envelope.limit_load               = 3.  
     vehicle.passengers                        = 5
 
     # ------------------------------------------------------------------    
@@ -463,7 +474,7 @@ def vehicle_setup() :
                                                      airfoil_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_7500000.txt' ]
     prop_rotor.append_airfoil(airfoil)                
     prop_rotor.airfoil_polar_stations             = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]    
-    prop_rotor.fidelity                           = "Momentum_Theory"  
+    prop_rotor.fidelity                           = "Momentum_Theory"   
     design_prop_rotor(prop_rotor) 
     propulsor.rotor =  prop_rotor 
     
@@ -499,7 +510,7 @@ def vehicle_setup() :
     origins =[[0.208, -1.848,  1.195],[0.208, 1.848,  1.195],
               [1.505,5.000,1.320],[1.505,-5.000,1.320],
               [  5.318, 1.848,   2.282],[   5.318, -1.848,   2.282]] 
-
+     
     assigned_propulsor_list = []    
     for i in range(len(origins)): 
         propulsor_i                                       = deepcopy(propulsor)
@@ -515,7 +526,7 @@ def vehicle_setup() :
         network.propulsors.append(propulsor_i)   
         assigned_propulsor_list.append(propulsor_i.tag) 
     bus.assigned_propulsors = [assigned_propulsor_list]
-    
+
     #------------------------------------------------------------------------------------------------------------------------------------  
     # Additional Bus Loads
     #------------------------------------------------------------------------------------------------------------------------------------            
@@ -577,10 +588,9 @@ def configs_setup(vehicle):
     config                                                 = RCAIDE.Library.Components.Configs.Config(vehicle)
     config.tag                                             = 'vertical_climb'
     vector_angle                                           = 90.0 * Units.degrees    
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
     configs.append(config)
 
     # ------------------------------------------------------------------
@@ -589,11 +599,10 @@ def configs_setup(vehicle):
     config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
     vector_angle                                      = 75.0  * Units.degrees   
     config.tag                                        = 'vertical_transition' 
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
-                propulsor.rotor.pitch_command   = propulsor.rotor.hover.design_pitch_command * 0.5 
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+            propulsor.rotor.pitch_command   = propulsor.rotor.hover.design_pitch_command * 0.5 
     configs.append(config) 
 
     # ------------------------------------------------------------------
@@ -602,26 +611,11 @@ def configs_setup(vehicle):
     config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
     config.tag                                        = 'low_speed_climb_transition'
     vector_angle                                      = 45.0  * Units.degrees   
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
-                propulsor.rotor.pitch_command     = propulsor.rotor.cruise.design_pitch_command * 0.5  
-    configs.append(config)
-    
-    # ------------------------------------------------------------------
-    #   Hover-to-Cruise Configuration
-    # ------------------------------------------------------------------
-    config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
-    config.tag                                        = 'medium_speed_climb_transition'
-    vector_angle                                      = 25.0  * Units.degrees   
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
-                propulsor.rotor.pitch_command     = propulsor.rotor.cruise.design_pitch_command * 0.5  
-    configs.append(config)     
-
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+            propulsor.rotor.pitch_command     = propulsor.rotor.cruise.design_pitch_command * 0.5  
+    configs.append(config) 
 
     # ------------------------------------------------------------------
     #   Hover-to-Cruise Configuration
@@ -629,51 +623,34 @@ def configs_setup(vehicle):
     config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
     config.tag                                        = 'high_speed_climb_transition'
     vector_angle                                      = 5.0  * Units.degrees   
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
-                propulsor.rotor.pitch_command     = propulsor.rotor.cruise.design_pitch_command  
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+            propulsor.rotor.pitch_command     = propulsor.rotor.cruise.design_pitch_command  
     configs.append(config) 
-
+ 
     # ------------------------------------------------------------------
     #   Cruise Configuration
     # ------------------------------------------------------------------
     config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
-    config.tag                                        = 'forward_flight'   
-    vector_angle                                      = 0.0 * Units.degrees  
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
-                propulsor.rotor.pitch_command   = propulsor.rotor.cruise.design_pitch_command  
-    configs.append(config)     
+    config.tag                                        = 'cruise'   
+    vector_angle                                      = 0.0 * Units.degrees   
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+            propulsor.rotor.pitch_command   = propulsor.rotor.cruise.design_pitch_command  
+    configs.append(config)
     
-    # ------------------------------------------------------------------
-    #   
-    # ------------------------------------------------------------------ 
-    config                                                 = RCAIDE.Library.Components.Configs.Config(vehicle)
-    vector_angle                                           = 75.0  * Units.degrees   
-    config.tag                                             = 'descent_transition'    
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
-                propulsor.rotor.pitch_command   = propulsor.rotor.cruise.design_pitch_command * 0.5
-    configs.append(config)  
-
-
     # ------------------------------------------------------------------
     #   Approach Configuration
     # ------------------------------------------------------------------
     config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
     config.tag                                        = 'approach_transition'    
     vector_angle                                      = 85.0  * Units.degrees   
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0] 
-                propulsor.rotor.pitch_command   = propulsor.rotor.cruise.design_pitch_command * 0.75
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0] 
+            propulsor.rotor.pitch_command   = propulsor.rotor.cruise.design_pitch_command * 0.75
     configs.append(config)
     
     
@@ -682,11 +659,10 @@ def configs_setup(vehicle):
     # ------------------------------------------------------------------
     config                                            = RCAIDE.Library.Components.Configs.Config(vehicle)
     config.tag                                        = 'vertical_descent'
-    vector_angle                                      = 90.0  * Units.degrees    
-    for network in  config.networks: 
-        for bus in network.busses: 
-            for propulsor in  bus.propulsors:
-                propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+    vector_angle                                      = 90.0  * Units.degrees 
+    for network in  config.networks:  
+        for propulsor in  network.propulsors:  
+            propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
     configs.append(config)
 
     return configs
@@ -773,42 +749,7 @@ def mission_setup(analyses ):
                                                                              
     mission.append_segment(segment)   
     
-    #------------------------------------------------------------------------------------------------------------------------------------ 
-    # Circular departure pattern 
-    #------------------------------------------------------------------------------------------------------------------------------------ 
-    segment                                               = Segments.Cruise.Curved_Constant_Radius_Constant_Speed_Constant_Altitude(base_segment)
-    segment.tag                                           = "Approach_Pattern_Curve"   
-    segment.analyses.extend( analyses.high_speed_climb_transition )           
-    segment.air_speed   = 90 * Units.kts 
-    segment.turn_radius = 3600 * Units.feet  
-    segment.true_course = 0 * Units.degree     
-    segment.turn_angle  = 90 * Units.degree
-    segment.altitude    = 500 * Units.feet
-    
-    # define flight dynamics to model 
-    segment.flight_dynamics.force_x                                             = True    
-    segment.flight_dynamics.force_z                                             = True    
-    segment.flight_dynamics.force_y                                             = True     
-    segment.flight_dynamics.moment_y                                            = True 
-    segment.flight_dynamics.moment_x                                            = True
-    segment.flight_dynamics.moment_z                                            = True 
-
-    # define flight controls              
-    segment.assigned_control_variables.throttle.active                          = True           
-    segment.assigned_control_variables.throttle.assigned_propulsors             = [['prop_rotor_propulsor_1','prop_rotor_propulsor_2','prop_rotor_propulsor_3',
-                                                                                    'prop_rotor_propulsor_4','prop_rotor_propulsor_5','prop_rotor_propulsor_6']]   
-    segment.assigned_control_variables.body_angle.active                        = True    
-    segment.assigned_control_variables.elevator_deflection.active               = True    
-    segment.assigned_control_variables.elevator_deflection.assigned_surfaces    = [['elevator']]   
-    segment.assigned_control_variables.aileron_deflection.active                = True    
-    segment.assigned_control_variables.aileron_deflection.assigned_surfaces     = [['aileron']] 
-    segment.assigned_control_variables.rudder_deflection.active                 = True    
-    segment.assigned_control_variables.rudder_deflection.assigned_surfaces      = [['rudder']] 
-    segment.assigned_control_variables.bank_angle.active                        = True    
-    segment.assigned_control_variables.bank_angle.initial_guess_values          = [[20.0 * Units.degree]]
-    
-    mission.append_segment(segment)
-    
+ 
     # ------------------------------------------------------------------
     #   First Cruise Segment: Constant Acceleration, Constant Altitude
     # ------------------------------------------------------------------ 
@@ -880,43 +821,7 @@ def mission_setup(analyses ):
     segment.assigned_control_variables.body_angle.active             = True
     
         
-    mission.append_segment(segment)      
-    
-    #------------------------------------------------------------------------------------------------------------------------------------ 
-    # Circular departure pattern 
-    #------------------------------------------------------------------------------------------------------------------------------------ 
-    segment                                               = Segments.Cruise.Curved_Constant_Radius_Constant_Speed_Constant_Altitude(base_segment)
-    segment.tag                                           = "Approach_Pattern_Curve"   
-    segment.analyses.extend( analyses.high_speed_climb_transition )             
-    segment.air_speed   = 90 * Units.kts 
-    segment.turn_radius = 3600 * Units.feet  
-    segment.true_course = 90 * Units.degree     
-    segment.turn_angle  = 90 * Units.degree
-    segment.altitude    = 500 * Units.feet
-    
-    # define flight dynamics to model 
-    segment.flight_dynamics.force_x                                             = True    
-    segment.flight_dynamics.force_z                                             = True    
-    segment.flight_dynamics.force_y                                             = True     
-    segment.flight_dynamics.moment_y                                            = True 
-    segment.flight_dynamics.moment_x                                            = True
-    segment.flight_dynamics.moment_z                                            = True 
-
-    # define flight controls              
-    segment.assigned_control_variables.throttle.active                          = True           
-    segment.assigned_control_variables.throttle.assigned_propulsors             = [['prop_rotor_propulsor_1','prop_rotor_propulsor_2','prop_rotor_propulsor_3',
-                                                                                    'prop_rotor_propulsor_4','prop_rotor_propulsor_5','prop_rotor_propulsor_6']]  
-    segment.assigned_control_variables.body_angle.active                        = True    
-    segment.assigned_control_variables.elevator_deflection.active               = True    
-    segment.assigned_control_variables.elevator_deflection.assigned_surfaces    = [['elevator']]   
-    segment.assigned_control_variables.aileron_deflection.active                = True    
-    segment.assigned_control_variables.aileron_deflection.assigned_surfaces     = [['aileron']] 
-    segment.assigned_control_variables.rudder_deflection.active                 = True    
-    segment.assigned_control_variables.rudder_deflection.assigned_surfaces      = [['rudder']] 
-    segment.assigned_control_variables.bank_angle.active                        = True    
-    segment.assigned_control_variables.bank_angle.initial_guess_values          = [[20.0 * Units.degree]]
-    
-    mission.append_segment(segment)  
+    mission.append_segment(segment) 
     
         
     # ------------------------------------------------------------------
@@ -964,8 +869,6 @@ def mission_setup(analyses ):
     
     return mission
 
-
-
 def missions_setup(mission): 
  
     missions         = RCAIDE.Framework.Mission.Missions()
@@ -998,7 +901,30 @@ def plot_results(results):
     # Plot Propeller Conditions 
     plot_rotor_conditions(results) 
     plot_disc_and_power_loading(results)  
+    return
+
+def save_aircraft_geometry(geometry,filename): 
+    pickle_file  = filename + '.pkl'
+    with open(pickle_file, 'wb') as file:
+        pickle.dump(geometry, file) 
     return 
+
+
+def load_aircraft_geometry(filename):  
+    load_file = filename + '.pkl' 
+    with open(load_file, 'rb') as file:
+        results = pickle.load(file) 
+    return results
+
+
+def load_rotor(filename):
+    rotor =  load(filename)
+    return rotor
+
+def save_rotor(rotor, filename):
+    save(rotor, filename)
+    return
+
 if __name__ == '__main__': 
     main()    
     plt.show()

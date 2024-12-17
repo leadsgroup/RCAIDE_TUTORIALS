@@ -645,7 +645,7 @@ def vehicle_setup(redesign_rotors=True) :
     prop_rotor_esc                                = RCAIDE.Library.Components.Energy.Modulators.Electronic_Speed_Controller()
     prop_rotor_esc.efficiency                     = 0.95    
     prop_rotor_esc.tag                            = 'prop_rotor_esc_1'  
-    front_propulsor.electronic_speed_controller         = prop_rotor_esc  
+    front_propulsor.electronic_speed_controller   = prop_rotor_esc  
     
     # Lift Rotor Design
     g                                             = 9.81                                    # gravitational acceleration   
@@ -681,17 +681,8 @@ def vehicle_setup(redesign_rotors=True) :
                                                      airfoil_path + 'Airfoils' + separator + 'Polars' + separator + 'NACA_4412_polar_Re_7500000.txt' ]
     prop_rotor.append_airfoil(airfoil)                
     prop_rotor.airfoil_polar_stations             = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]    
-    prop_rotor.fidelity                           = "Momentum_Theory"  
-    
-    if redesign_rotors:
-        design_prop_rotor(prop_rotor)
-        save_rotor(prop_rotor, os.path.join(local_path, 'Tilt_Stopped_Rotor_prop_rotor_geometry.res'))
-    else: 
-        loaded_prop_rotor = load_rotor(os.path.join(local_path, 'Tilt_Stopped_Rotor_prop_rotor_geometry.res')) 
-        for key,item in prop_rotor.items():
-            prop_rotor[key] = loaded_prop_rotor[key] 
-        prop_rotor.Wake   = RCAIDE.Framework.Analyses.Propulsion.Rotor_Wake_Fidelity_Zero()      
-        
+    prop_rotor.fidelity                           = "Momentum_Theory"   
+    design_prop_rotor(prop_rotor) 
     front_propulsor.rotor =  prop_rotor 
     
     
@@ -931,9 +922,10 @@ def configs_setup(vehicle):
     config                                                 = RCAIDE.Library.Components.Configs.Config(vehicle)
     config.tag                                             = 'vertical_flight'
     vector_angle                                           = 90.0 * Units.degrees    
-    bus = config.networks.electric.busses.prop_rotor_bus  
-    for propulsor in  bus.propulsors: 
-        propulsor.rotor.orientation_euler_angles =  [0, vector_angle, 0]
+    config.networks.electric.network.propulsors['prop_rotor_propulsor_1'].rotor.orientation_euler_angles =  [0, vector_angle, 0]
+    config.networks.electric.network.propulsors['prop_rotor_propulsor_2'].rotor.orientation_euler_angles =  [0, vector_angle, 0]
+    config.networks.electric.network.propulsors['prop_rotor_propulsor_3'].rotor.orientation_euler_angles =  [0, vector_angle, 0]
+    config.networks.electric.network.propulsors['prop_rotor_propulsor_4'].rotor.orientation_euler_angles =  [0, vector_angle, 0]
     configs.append(config)
 
     # ------------------------------------------------------------------
