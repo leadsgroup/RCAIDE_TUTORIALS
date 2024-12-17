@@ -25,7 +25,7 @@ def main():
     propeller      = design_test_propeller()
     
     # define velocity range 
-    velocity_range =  np.linspace(10, 100, 29) 
+    velocity_range =  np.atleast_2d(np.linspace(10, 100, 29)).T
     
     # define RPM
     angular_velocity = 2500*Units.rpm
