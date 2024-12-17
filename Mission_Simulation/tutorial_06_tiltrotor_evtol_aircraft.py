@@ -140,14 +140,14 @@ def vehicle_setup() :
     #   Vehicle-level Properties
     # ------------------------------------------------------------------    
     # mass properties
-    vehicle.mass_properties.takeoff           = 2177
-    vehicle.mass_properties.operating_empty   = 2177      
-    vehicle.mass_properties.max_takeoff       = 2177             
-    vehicle.mass_properties.center_of_gravity = [[2.0144,   0.  ,  0. ]]      
-    vehicle.reference_area                    = 10.39
-    vehicle.flight_envelope.ultimate_load            = 5.7   
-    vehicle.flight_envelope.limit_load               = 3.  
-    vehicle.passengers                        = 5
+    vehicle.mass_properties.takeoff              = 2177
+    vehicle.mass_properties.operating_empty      = 2177      
+    vehicle.mass_properties.max_takeoff          = 2177             
+    vehicle.mass_properties.center_of_gravity    = [[2.0144,   0.  ,  0. ]]      
+    vehicle.reference_area                       = 10.39
+    vehicle.flight_envelope.ultimate_load        = 5.7   
+    vehicle.flight_envelope.positive_limit_load  = 3.  
+    vehicle.passengers                           = 5
 
     # ------------------------------------------------------------------    
     # WINGS                                    

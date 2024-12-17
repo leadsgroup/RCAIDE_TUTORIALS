@@ -76,7 +76,7 @@ def vehicle_setup():
 
     # envelope properties
     vehicle.flight_envelope.ultimate_load             = 3.75
-    vehicle.flight_envelope.limit_load                = 1.5
+    vehicle.flight_envelope.positive_limit_load       = 1.5
               
     # basic parameters              
     vehicle.reference_area                            = 61.0  

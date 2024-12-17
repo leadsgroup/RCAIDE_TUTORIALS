@@ -148,7 +148,7 @@ def vehicle_setup() :
     vehicle.mass_properties.center_of_gravity = [[ 2.1345, 0 , 0 ]] 
     vehicle.mass_properties.moments_of_inertia.tensor = np.array([[164627.7,0.0,0.0],[0.0,471262.4,0.0],[0.0,0.0,554518.7]])
     vehicle.flight_envelope.ultimate_load            = 5.7   
-    vehicle.flight_envelope.limit_load               = 3.  
+    vehicle.flight_envelope.positive_limit_load      = 3.  
     vehicle.passengers                        = 5 
         
     #------------------------------------------------------------------------------------------------------------------------------------
