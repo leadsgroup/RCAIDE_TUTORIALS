@@ -135,26 +135,26 @@ def vehicle_setup():
     vehicle.tag = 'Concorde'
     
     # mass properties
-    vehicle.mass_properties.max_takeoff     = 185000.   # kg
-    vehicle.mass_properties.operating_empty = 78700.   # kg
-    vehicle.mass_properties.takeoff         = 183000.   # kg, adjusted due to significant fuel burn on runway
-    vehicle.mass_properties.cargo           = 1000.  * Units.kilogram   
-    vehicle.mass_properties.max_zero_fuel   = 92000.
-        
-    # envelope properties
-    vehicle.flight_envelope.ultimate_load   = 3.75
-    vehicle.flight_envelope.limit_load      = 2.5
+    vehicle.mass_properties.max_takeoff          = 185000.   # kg
+    vehicle.mass_properties.operating_empty      = 78700.   # kg
+    vehicle.mass_properties.takeoff              = 183000.   # kg, adjusted due to significant fuel burn on runway
+    vehicle.mass_properties.cargo                = 1000.  * Units.kilogram   
+    vehicle.mass_properties.max_zero_fuel        = 92000.
+              
+    # envelope properties      
+    vehicle.flight_envelope.ultimate_load        = 3.75
+    vehicle.flight_envelope.positive_limit_load  = 2.5
   
     # basic parameters  
-    vehicle.reference_area                 = 358.25      
-    vehicle.passengers                     = 100
-    vehicle.systems.control                = "fully powered" 
-    vehicle.systems.accessories            = "sst"
-    vehicle.maximum_cross_sectional_area   = 13.9
-    vehicle.total_length                   = 61.66
-    vehicle.design_mach_number             = 2.02
-    vehicle.design_range                   = 4505 * Units.miles
-    vehicle.design_cruise_alt              = 60000.0 * Units.ft
+    vehicle.reference_area                       = 358.25      
+    vehicle.passengers                           = 100
+    vehicle.systems.control                      = "fully powered" 
+    vehicle.systems.accessories                  = "sst"
+    vehicle.maximum_cross_sectional_area         = 13.9
+    vehicle.total_length                         = 61.66
+    vehicle.design_mach_number                   = 2.02
+    vehicle.design_range                         = 4505 * Units.miles
+    vehicle.design_cruise_alt                    = 60000.0 * Units.ft
     
     #------------------------------------------------------------------------------------------------------------------------------------
     # ######################################################## Wings ####################################################################  
